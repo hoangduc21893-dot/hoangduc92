@@ -59,11 +59,15 @@ jobs:
               "primary and secondary blockers": "secondary_blockers",
               "distance to trigger": "distance_to_trigger",
               "strategy proximity ranking": "Strategy proximity ranking",
+              "strategy proximity scores": "proximity_score",
+              "per-ticker best strategy fields": "best_strategy",
+              "distance-to-trigger scoring": "math.exp(-value / scale)",
+              "DS1 watchlist ranking": "DS1 WATCHLIST RANKING",
           }
           missing = [name for name, marker in required.items() if marker not in source]
           if missing:
               raise SystemExit("Extracted engine package is missing: " + ", ".join(missing))
-          print("Extracted source verified: regime safety and S1-S5 Diagnostic v2")
+          print("Extracted source verified: regime safety, Diagnostic v2, and proximity watchlist")
           PY
 
       - name: Install dependencies
