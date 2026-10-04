@@ -50,19 +50,25 @@ jobs:
           from pathlib import Path
           p = Path("main.py")
           source = p.read_text(encoding="utf-8")
+
+          # Force the reviewer onto the current Gemini 3.8 Interactions API.
           source = source.replace("gemini-2.5-flash", "gemini-3.8-flash")
           source = source.replace(
-              """response = client.models.generate_content(\n                model=GEMINI_MODEL,\n                contents=prompt\n            )\n\n            if not response.text:""",
-              """response = client.interactions.create(\n                model=GEMINI_MODEL,\n                input=prompt\n            )\n\n            if not response.output_text:"""
+              "client.models.generate_content",
+              "client.interactions.create",
           )
+          source = source.replace("contents=", "input=")
           source = source.replace("response.text", "response.output_text")
-          if "client.models.generate_content(" in source:
+
+          if "client.models.generate_content" in source:
               raise SystemExit("Gemini Reviewer still uses generate_content(); migration failed")
-          if "client.interactions.create(" not in source:
+          if "client.interactions.create" not in source:
               raise SystemExit("Gemini Reviewer Interactions API call was not found after migration")
+          if "gemini-3.8-flash" not in source:
+              raise SystemExit("Gemini 3.8 Flash model was not found after migration")
+
           p.write_text(source, encoding="utf-8")
           print("Gemini Reviewer migrated to Interactions API with gemini-3.8-flash")
-          PY
 
       - name: Verify extracted package has regime safety and Diagnostic v2
         working-directory: engine
