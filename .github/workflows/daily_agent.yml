@@ -1,0 +1,99 @@
+name: Daily Trading Engine DS1
+
+on:
+  schedule:
+    - cron: '30 8 * * 1-5'
+  workflow_dispatch:
+
+concurrency:
+  group: ds1-daily-scan
+  cancel-in-progress: false
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Restore signal history
+        uses: actions/cache@v4
+        with:
+          path: data/signal_history.jsonl
+          key: signal-history-${{ github.run_id }}
+          restore-keys: signal-history-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate and extract Trading Engine package
+        env:
+          PACKAGE_PATH: trading-engine-s1-s5-diagnostic-v2.zip
+        run: |
+          test -s "$PACKAGE_PATH"
+          unzip -tq "$PACKAGE_PATH"
+          sha256sum "$PACKAGE_PATH"
+          rm -rf engine
+          mkdir -p engine
+          unzip -oq "$PACKAGE_PATH" -d engine
+          test -s engine/main.py
+          test -s engine/requirements.txt
+          test -s engine/test_risk_engine.py
+          test -s engine/test_gemini_reviewer.py
+
+      - name: Verify extracted package has regime safety and Diagnostic v2
+        working-directory: engine
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source = Path("main.py").read_text(encoding="utf-8")
+          required = {
+              "DNSE index endpoint": 'https://services.entrade.com.vn/chart-api/v2/ohlcs/index',
+              "VN30 fallback": '"VNINDEX", "VN30"',
+              "unknown regime": '"REGIME_UNKNOWN"',
+              "market loader": "def load_market_data(",
+              "S1-S5 diagnostic evaluator": "def _diagnose_setup(",
+              "diagnostics in signal history": "setup_diagnostics",
+              "per-condition diagnostic records": "condition_details",
+              "primary and secondary blockers": "secondary_blockers",
+              "distance to trigger": "distance_to_trigger",
+              "strategy proximity ranking": "Strategy proximity ranking",
+              "strategy proximity scores": "proximity_score",
+              "per-ticker best strategy fields": "best_strategy",
+              "distance-to-trigger scoring": "math.exp(-value / scale)",
+              "DS1 watchlist ranking": "DS1 WATCHLIST RANKING",
+              "structured Gemini review validation": "def _validate_gemini_review(",
+              "Gemini API error classification": "QUOTA_OR_RATE_LIMIT",
+              "Gemini API error diagnostics": "exception_type=%s category=%s status=%s message=%s",
+          }
+          missing = [name for name, marker in required.items() if marker not in source]
+          if missing:
+              raise SystemExit("Extracted engine package is missing: " + ", ".join(missing))
+          print("Extracted source verified: regime safety, Diagnostic v2, and proximity watchlist")
+          PY
+
+      - name: Install dependencies
+        run: python -m pip install -r engine/requirements.txt
+
+      - name: Run engine and market-regime tests
+        working-directory: engine
+        run: python -m unittest discover -v
+
+      - name: Run Trading Engine
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python engine/main.py
+
+      - name: Save signal history artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signal-history-${{ github.run_id }}
+          path: data/signal_history.jsonl
+          if-no-files-found: ignore
+          retention-days: 90
+
