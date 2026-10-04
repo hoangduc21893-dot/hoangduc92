@@ -34,6 +34,7 @@ jobs:
         run: |
           test -s "$PACKAGE_PATH"
           unzip -tq "$PACKAGE_PATH"
+          sha256sum "$PACKAGE_PATH"
           rm -rf engine
           mkdir -p engine
           unzip -oq "$PACKAGE_PATH" -d engine
@@ -41,12 +42,30 @@ jobs:
           test -s engine/requirements.txt
           test -s engine/test_risk_engine.py
 
+      - name: Verify extracted package uses regime-safety source
+        working-directory: engine
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source = Path("main.py").read_text(encoding="utf-8")
+          required = {
+              "DNSE index endpoint": 'https://services.entrade.com.vn/chart-api/v2/ohlcs/index',
+              "VN30 fallback": '"VNINDEX", "VN30"',
+              "unknown regime": '"REGIME_UNKNOWN"',
+              "market loader": "def load_market_data(",
+          }
+          missing = [name for name, marker in required.items() if marker not in source]
+          if missing:
+              raise SystemExit("Extracted engine package is missing: " + ", ".join(missing))
+          print("Extracted source verified: index endpoint, VN30 fallback, REGIME_UNKNOWN")
+          PY
+
       - name: Install dependencies
         run: python -m pip install -r engine/requirements.txt
 
-      - name: Run focused risk-engine tests
+      - name: Run engine and market-regime tests
         working-directory: engine
-        run: python -m unittest test_risk_engine.py
+        run: python -m unittest discover -v
 
       - name: Run Trading Engine
         env:
