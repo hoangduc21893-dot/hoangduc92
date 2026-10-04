@@ -67,6 +67,7 @@ jobs:
               "structured Gemini review validation": "def _validate_gemini_review(",
               "Gemini API error classification": "QUOTA_OR_RATE_LIMIT",
               "Gemini API error diagnostics": "exception_type=%s category=%s status=%s message=%s",
+              "Gemini model 3.8": "gemini-3.8-flash",
           }
           missing = [name for name, marker in required.items() if marker not in source]
           if missing:
@@ -84,6 +85,7 @@ jobs:
       - name: Run Trading Engine
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.8-flash
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python engine/main.py
