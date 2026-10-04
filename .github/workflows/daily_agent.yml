@@ -80,18 +80,9 @@ jobs:
 
           p.write_text(source, encoding="utf-8")
 
-          # Keep the unit-test mocks aligned with the migrated SDK call shape.
-          test_path = Path("test_gemini_reviewer.py")
-          test_source = test_path.read_text(encoding="utf-8")
+          # Only rename the mocked SDK method. Do not rewrite response fixtures/assertions.
+          # Production code handles Interactions API output_text and legacy text fixtures.
           test_source = test_source.replace("models.generate_content", "interactions.create")
-          test_source = test_source.replace("response.text", "response.output_text")
-          # Interactions API exposes output_text; update mocked response objects too.
-          # Preserve existing test fixtures and make them compatible with both SDK response shapes.
-          # Keep fixtures using the existing text field, while making assertions/mocks
-          # compatible with the Interactions API response shape.
-          test_source = test_source.replace("SimpleNamespace(output_text=", "SimpleNamespace(text=")
-          test_source = test_source.replace("response.output_text", 'getattr(response, "output_text", None) or getattr(response, "text", "")')
-          test_source = test_source.replace(".output_text", '.text')
           test_path.write_text(test_source, encoding="utf-8")
 
           if "models.generate_content" in test_source:
