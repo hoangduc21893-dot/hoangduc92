@@ -48,7 +48,6 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import re
           p = Path("main.py")
           source = p.read_text(encoding="utf-8")
 
@@ -76,7 +75,6 @@ jobs:
           test_source = test_source.replace("models.generate_content", "interactions.create")
           test_source = test_source.replace("response.text", "response.output_text")
           # Interactions API exposes output_text; update mocked response objects too.
-          test_source = re.sub(r"SimpleNamespace\\(\\s*text\\s*=", "SimpleNamespace(output_text=", test_source)
           test_source = test_source.replace("SimpleNamespace(text=", "SimpleNamespace(output_text=")
           test_path.write_text(test_source, encoding="utf-8")
 
