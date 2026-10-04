@@ -76,8 +76,11 @@ jobs:
           test_source = test_source.replace("response.text", "response.output_text")
           # Interactions API exposes output_text; update mocked response objects too.
           # Preserve existing test fixtures and make them compatible with both SDK response shapes.
+          # Keep fixtures using the existing text field, while making assertions/mocks
+          # compatible with the Interactions API response shape.
           test_source = test_source.replace("SimpleNamespace(output_text=", "SimpleNamespace(text=")
           test_source = test_source.replace("response.output_text", 'getattr(response, "output_text", None) or getattr(response, "text", "")')
+          test_source = test_source.replace(".output_text", '.text')
           test_path.write_text(test_source, encoding="utf-8")
 
           if "models.generate_content" in test_source:
