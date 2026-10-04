@@ -1,0 +1,31 @@
+name: Daily Stock Analysis Agent
+
+on:
+  schedule:
+    # 08:30 UTC tương đương 15:30 chiều giờ Việt Nam (UTC+7), từ Thứ 2 đến Thứ 6
+    - cron: '30 8 * * 1-5'
+  workflow_dispatch: # Cho phép bấm nút chạy thử thủ công bất kỳ lúc nào trên web
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas requests google-genai
+
+      - name: Run Stock Agent
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python main.py
