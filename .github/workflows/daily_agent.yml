@@ -41,6 +41,7 @@ jobs:
           test -s engine/main.py
           test -s engine/requirements.txt
           test -s engine/test_risk_engine.py
+          test -s engine/test_gemini_reviewer.py
 
       - name: Verify extracted package has regime safety and Diagnostic v2
         working-directory: engine
@@ -63,6 +64,9 @@ jobs:
               "per-ticker best strategy fields": "best_strategy",
               "distance-to-trigger scoring": "math.exp(-value / scale)",
               "DS1 watchlist ranking": "DS1 WATCHLIST RANKING",
+              "structured Gemini review validation": "def _validate_gemini_review(",
+              "Gemini API error classification": "QUOTA_OR_RATE_LIMIT",
+              "Gemini API error diagnostics": "exception_type=%s category=%s status=%s message=%s",
           }
           missing = [name for name, marker in required.items() if marker not in source]
           if missing:
