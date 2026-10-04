@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 from google import genai
 
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or "AQ.Ab8RN6LQhvEFV_N9qwGpIdqNvROF6H4SzdpCnDxn18UP7p_IFg"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or "AQ.Ab8RN6K-YxbMWWdRGEjLhWXEILxtNUsL4KRp1KNb3SYxJJbEog"
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 SYMBOL = "FPT"
