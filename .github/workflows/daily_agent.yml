@@ -28,11 +28,18 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Extract Trading Engine package
+      - name: Validate and extract Trading Engine package
+        env:
+          PACKAGE_PATH: trading-engine-s1-s5-ds1-risk-upgraded.zip
         run: |
+          test -s "$PACKAGE_PATH"
+          unzip -tq "$PACKAGE_PATH"
           rm -rf engine
           mkdir -p engine
-          unzip -o trading-engine-s1-s5-ds1-risk-upgraded.zip -d engine
+          unzip -oq "$PACKAGE_PATH" -d engine
+          test -s engine/main.py
+          test -s engine/requirements.txt
+          test -s engine/test_risk_engine.py
 
       - name: Install dependencies
         run: python -m pip install -r engine/requirements.txt
