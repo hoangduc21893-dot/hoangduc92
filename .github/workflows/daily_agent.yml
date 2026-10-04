@@ -42,7 +42,7 @@ jobs:
           test -s engine/requirements.txt
           test -s engine/test_risk_engine.py
 
-      - name: Verify extracted package uses regime-safety source
+      - name: Verify extracted package has regime safety and S1-S5 diagnostics
         working-directory: engine
         run: |
           python - <<'PY'
@@ -53,11 +53,13 @@ jobs:
               "VN30 fallback": '"VNINDEX", "VN30"',
               "unknown regime": '"REGIME_UNKNOWN"',
               "market loader": "def load_market_data(",
+              "S1-S5 diagnostic evaluator": "def _diagnose_setup(",
+              "diagnostics in signal history": "setup_diagnostics",
           }
           missing = [name for name, marker in required.items() if marker not in source]
           if missing:
               raise SystemExit("Extracted engine package is missing: " + ", ".join(missing))
-          print("Extracted source verified: index endpoint, VN30 fallback, REGIME_UNKNOWN")
+          print("Extracted source verified: regime safety and S1-S5 diagnostic engine")
           PY
 
       - name: Install dependencies
