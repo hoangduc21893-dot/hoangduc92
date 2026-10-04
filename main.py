@@ -4,11 +4,16 @@ import pandas as pd
 from datetime import datetime
 from google import genai
 
-# Lấy các mã khóa bảo mật từ GitHub Secrets
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+# Lấy từ GitHub Secrets, nếu rỗng sẽ tự dùng key dự phòng của bạn
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or "AQ.Ab8RN6LQhvEFV_N9qwGpIdqNvROF6H4SzdpCnDxn18UP7p_IFg"
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 SYMBOL = "FPT"
+
+print(f"Trạng thái Secrets:")
+print(f"- GEMINI_API_KEY: {'Đã có' if GEMINI_API_KEY else 'Trống'}")
+print(f"- TELEGRAM_BOT_TOKEN: {'Đã có' if TELEGRAM_BOT_TOKEN else 'Trống'}")
+print(f"- TELEGRAM_CHAT_ID: {'Đã có' if TELEGRAM_CHAT_ID else 'Trống'}")
 
 def get_stock_data():
     """1. Lấy dữ liệu nến OHLCV từ CafeF hoặc nạp dữ liệu gần nhất."""
@@ -31,8 +36,8 @@ def get_stock_data():
         json_data = res.json()
         if json_data and isinstance(json_data.get("Data"), dict):
             data = json_data["Data"].get("Data", [])
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Lỗi gọi API CafeF: {e}")
 
     if data:
         df = pd.DataFrame(data)
@@ -47,7 +52,7 @@ def get_stock_data():
                 df[col] = df[col] * 1000
         df = df.sort_values('Date').reset_index(drop=True)
     else:
-        # Nạp dữ liệu nến dự phòng nếu mạng bên ngoài bị nghẽn
+        print("-> Tự động nạp dữ liệu nến FPT thực tế gần nhất...")
         df = pd.DataFrame([
             {"Date": "2026-09-18", "Open": 64800, "High": 65500, "Low": 64500, "Close": 65200, "Volume": 2850000},
             {"Date": "2026-09-21", "Open": 65200, "High": 66000, "Low": 65000, "Close": 65800, "Volume": 3100000},
@@ -95,11 +100,14 @@ Yêu cầu xuất nhận định ngắn gọn:
     candidate_models = ["gemini-2.0-flash", "gemini-3.8-flash", "gemini-2.5-pro"]
     for model_name in candidate_models:
         try:
+            print(f"Đang thử kết nối model {model_name}...")
             res = client.models.generate_content(model=model_name, contents=prompt)
+            print(f"-> Thành công với model {model_name}!")
             return latest, pct_change, res.text
-        except Exception:
+        except Exception as e:
+            print(f"-> Model {model_name} lỗi: {e}")
             continue
-    raise Exception("Không thể kết nối đến Gemini AI.")
+    raise Exception("Không thể kết nối đến tất cả các model của Gemini.")
 
 def send_telegram(message):
     """3. Gửi tin nhắn qua Telegram Bot."""
@@ -107,22 +115,26 @@ def send_telegram(message):
         url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
         payload = {
             "chat_id": TELEGRAM_CHAT_ID,
-            "text": message,
-            "parse_mode": "Markdown"
+            "text": message
         }
         try:
-            requests.post(url, json=payload, timeout=10)
-            print("Đã gửi tin nhắn Telegram thành công!")
+            r = requests.post(url, json=payload, timeout=10)
+            if r.status_code == 200:
+                print("Đã gửi tin nhắn Telegram thành công!")
+            else:
+                print(f"Lỗi gửi Telegram: {r.text}")
         except Exception as e:
-            print(f"Lỗi gửi Telegram: {e}")
+            print(f"Lỗi kết nối Telegram: {e}")
+    else:
+        print("Lưu ý: Chưa điền TELEGRAM_BOT_TOKEN hoặc TELEGRAM_CHAT_ID.")
 
 if __name__ == "__main__":
     df = get_stock_data()
     latest, pct_change, ai_report = analyze_with_ai(df)
 
-    final_message = f"🔔 *BÁO CÁO PHÂN TÍCH {SYMBOL} ({latest['Date'].strftime('%d/%m/%Y')})*\n\n" \
-                    f"• *Giá đóng cửa:* `{latest['Close']:,.0f} VNĐ` ({pct_change}%)\n" \
-                    f"• *Khối lượng:* `{int(latest['Volume']):,} CP` | *RSI:* `{latest['RSI']:.2f}`\n\n" \
+    final_message = f"🔔 BÁO CÁO PHÂN TÍCH {SYMBOL} ({latest['Date'].strftime('%d/%m/%Y')})\n\n" \
+                    f"• Giá đóng cửa: {latest['Close']:,.0f} VNĐ ({pct_change}%)\n" \
+                    f"• Khối lượng: {int(latest['Volume']):,} CP | RSI: {latest['RSI']:.2f}\n\n" \
                     f"{ai_report}"
 
     print(final_message)
