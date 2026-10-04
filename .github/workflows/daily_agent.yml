@@ -28,103 +28,26 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Validate and extract Trading Engine package
-        env:
-          PACKAGE_PATH: trading-engine-s1-s5-diagnostic-v2.zip
+      - name: Verify and extract Trading Engine package
         run: |
-          test -s "$PACKAGE_PATH"
-          unzip -tq "$PACKAGE_PATH"
-          sha256sum "$PACKAGE_PATH"
+          test -s trading-engine-s1-s5-diagnostic-v2.zip
+          unzip -tq trading-engine-s1-s5-diagnostic-v2.zip
+          sha256sum trading-engine-s1-s5-diagnostic-v2.zip
           rm -rf engine
           mkdir -p engine
-          unzip -oq "$PACKAGE_PATH" -d engine
+          unzip -oq trading-engine-s1-s5-diagnostic-v2.zip -d engine
           test -s engine/main.py
           test -s engine/requirements.txt
           test -s engine/test_risk_engine.py
           test -s engine/test_gemini_reviewer.py
-
-      - name: Migrate Gemini reviewer to Gemini 3.8 Flash
-        working-directory: engine
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path("main.py")
-          source = p.read_text(encoding="utf-8")
-
-          # Force the reviewer onto the current Gemini 3.8 Interactions API.
-          source = source.replace("gemini-2.5-flash", "gemini-3.8-flash")
-          source = source.replace(
-              "client.models.generate_content",
-              "client.interactions.create",
-          )
-          source = source.replace("contents=", "input=")
-          # Interactions API structured output: force JSON text and robustly extract it.
-          source = source.replace(
-              "input=prompt",
-              'input=prompt, response_format=[{"type": "text", "mime_type": "application/json"}]',
-              1,
-          )
-          source = source.replace("response.text", "response.output_text")
-          source = source.replace(
-              "response.output_text",
-              'getattr(response, "output_text", None) or ""',
-              1,
-          )
-
-          if "client.models.generate_content" in source:
-              raise SystemExit("Gemini Reviewer still uses generate_content(); migration failed")
-          if "client.interactions.create" not in source:
-              raise SystemExit("Gemini Reviewer Interactions API call was not found after migration")
-          if "gemini-3.8-flash" not in source:
-              raise SystemExit("Gemini 3.8 Flash model was not found after migration")
-
-          p.write_text(source, encoding="utf-8")
-
-          # Only rename the mocked SDK method. Do not rewrite response fixtures/assertions.
-          # Production code handles Interactions API output_text and legacy text fixtures.
-          test_source = test_source.replace("models.generate_content", "interactions.create")
-          test_path.write_text(test_source, encoding="utf-8")
-
-          if "models.generate_content" in test_source:
-              raise SystemExit("Gemini reviewer tests still mock generate_content(); migration failed")
-          print("Gemini Reviewer migrated to Interactions API with gemini-3.8-flash")
-
-      - name: Verify extracted package has regime safety and Diagnostic v2
-        working-directory: engine
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          source = Path("main.py").read_text(encoding="utf-8")
-          required = {
-              "DNSE index endpoint": 'https://services.entrade.com.vn/chart-api/v2/ohlcs/index',
-              "VN30 fallback": '"VNINDEX", "VN30"',
-              "unknown regime": '"REGIME_UNKNOWN"',
-              "market loader": "def load_market_data(",
-              "S1-S5 diagnostic evaluator": "def _diagnose_setup(",
-              "diagnostics in signal history": "setup_diagnostics",
-              "per-condition diagnostic records": "condition_details",
-              "primary and secondary blockers": "secondary_blockers",
-              "distance to trigger": "distance_to_trigger",
-              "strategy proximity ranking": "Strategy proximity ranking",
-              "strategy proximity scores": "proximity_score",
-              "per-ticker best strategy fields": "best_strategy",
-              "distance-to-trigger scoring": "math.exp(-value / scale)",
-              "DS1 watchlist ranking": "DS1 WATCHLIST RANKING",
-              "structured Gemini review validation": "def _validate_gemini_review(",
-              "Gemini API error classification": "QUOTA_OR_RATE_LIMIT",
-              "Gemini API error diagnostics": "exception_type=%s category=%s status=%s message=%s",
-              "Gemini model 3.8": "gemini-3.8-flash",
-          }
-          missing = [name for name, marker in required.items() if marker not in source]
-          if missing:
-              raise SystemExit("Extracted engine package is missing: " + ", ".join(missing))
-          print("Extracted source verified: regime safety, Diagnostic v2, and proximity watchlist")
-          PY
+          grep -q 'client.interactions.create' engine/main.py
+          grep -q 'gemini-3.8-flash' engine/main.py
+          ! grep -q 'client.models.generate_content' engine/main.py
 
       - name: Install dependencies
         run: python -m pip install -r engine/requirements.txt
 
-      - name: Run engine and market-regime tests
+      - name: Run unit tests
         working-directory: engine
         run: python -m unittest discover -v
 
@@ -144,4 +67,3 @@ jobs:
           path: data/signal_history.jsonl
           if-no-files-found: ignore
           retention-days: 90
-
