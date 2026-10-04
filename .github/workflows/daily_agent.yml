@@ -68,6 +68,16 @@ jobs:
               raise SystemExit("Gemini 3.8 Flash model was not found after migration")
 
           p.write_text(source, encoding="utf-8")
+
+          # Keep the unit-test mocks aligned with the migrated SDK call shape.
+          test_path = Path("test_gemini_reviewer.py")
+          test_source = test_path.read_text(encoding="utf-8")
+          test_source = test_source.replace("models.generate_content", "interactions.create")
+          test_source = test_source.replace("response.text", "response.output_text")
+          test_path.write_text(test_source, encoding="utf-8")
+
+          if "models.generate_content" in test_source:
+              raise SystemExit("Gemini reviewer tests still mock generate_content(); migration failed")
           print("Gemini Reviewer migrated to Interactions API with gemini-3.8-flash")
 
       - name: Verify extracted package has regime safety and Diagnostic v2
