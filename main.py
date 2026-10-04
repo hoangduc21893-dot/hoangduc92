@@ -1,19 +1,14 @@
 import os
+import time
 import requests
 import pandas as pd
 from datetime import datetime
 from google import genai
 
-# Lấy từ GitHub Secrets, nếu rỗng sẽ tự dùng key dự phòng của bạn
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY") or "AQ.Ab8RN6LQhvEFV_N9qwGpIdqNvROF6H4SzdpCnDxn18UP7p_IFg"
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 SYMBOL = "FPT"
-
-print(f"Trạng thái Secrets:")
-print(f"- GEMINI_API_KEY: {'Đã có' if GEMINI_API_KEY else 'Trống'}")
-print(f"- TELEGRAM_BOT_TOKEN: {'Đã có' if TELEGRAM_BOT_TOKEN else 'Trống'}")
-print(f"- TELEGRAM_CHAT_ID: {'Đã có' if TELEGRAM_CHAT_ID else 'Trống'}")
 
 def get_stock_data():
     """1. Lấy dữ liệu nến OHLCV từ CafeF hoặc nạp dữ liệu gần nhất."""
@@ -70,7 +65,7 @@ def get_stock_data():
     return df
 
 def analyze_with_ai(df):
-    """2. Tính chỉ báo kỹ thuật và gọi Gemini AI."""
+    """2. Tính chỉ báo kỹ thuật và gọi Gemini AI với cơ chế tự động thử lại."""
     df['SMA5'] = df['Close'].rolling(5).mean()
     delta = df['Close'].diff()
     gain = (delta.where(delta > 0, 0)).rolling(7).mean()
@@ -97,17 +92,30 @@ Yêu cầu xuất nhận định ngắn gọn:
 3. Khuyến nghị hành động (Mua / Bán / Tiếp tục quan sát).
 """
 
-    candidate_models = ["gemini-2.0-flash", "gemini-3.8-flash", "gemini-2.5-pro"]
+    # Danh sách các mô hình thế hệ Gemini 3 đang hoạt động
+    candidate_models = [
+        "gemini-3.8-flash",
+        "gemini-3-flash-preview",
+        "gemini-3.1-pro-preview"
+    ]
+    
     for model_name in candidate_models:
-        try:
-            print(f"Đang thử kết nối model {model_name}...")
-            res = client.models.generate_content(model=model_name, contents=prompt)
-            print(f"-> Thành công với model {model_name}!")
-            return latest, pct_change, res.text
-        except Exception as e:
-            print(f"-> Model {model_name} lỗi: {e}")
-            continue
-    raise Exception("Không thể kết nối đến tất cả các model của Gemini.")
+        for attempt in range(3):  # Thử lại tối đa 3 lần nếu gặp 503 bận máy chủ
+            try:
+                print(f"Đang kết nối {model_name} (lần {attempt + 1})...")
+                res = client.models.generate_content(model=model_name, contents=prompt)
+                print(f"-> Phân tích thành công với {model_name}!")
+                return latest, pct_change, res.text
+            except Exception as e:
+                err_msg = str(e)
+                print(f"-> {model_name} thông báo: {err_msg[:90]}")
+                if "503" in err_msg or "UNAVAILABLE" in err_msg:
+                    print("Máy chủ tạm bận, chờ 4 giây thử lại...")
+                    time.sleep(4)
+                else:
+                    break
+
+    raise Exception("Không thể kết nối đến các model Gemini.")
 
 def send_telegram(message):
     """3. Gửi tin nhắn qua Telegram Bot."""
@@ -122,11 +130,9 @@ def send_telegram(message):
             if r.status_code == 200:
                 print("Đã gửi tin nhắn Telegram thành công!")
             else:
-                print(f"Lỗi gửi Telegram: {r.text}")
+                print(f"Lỗi phản hồi Telegram: {r.text}")
         except Exception as e:
             print(f"Lỗi kết nối Telegram: {e}")
-    else:
-        print("Lưu ý: Chưa điền TELEGRAM_BOT_TOKEN hoặc TELEGRAM_CHAT_ID.")
 
 if __name__ == "__main__":
     df = get_stock_data()
