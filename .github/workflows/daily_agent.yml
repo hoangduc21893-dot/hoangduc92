@@ -61,7 +61,7 @@ jobs:
           # Interactions API structured output: force JSON text and robustly extract it.
           source = source.replace(
               "input=prompt",
-              'input=prompt, response_format={"type": "text", "mime_type": "application/json"}',
+              'input=prompt, response_format=[{"type": "text", "mime_type": "application/json"}]',
               1,
           )
           source = source.replace("response.text", "response.output_text")
