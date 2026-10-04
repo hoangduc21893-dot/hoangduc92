@@ -43,6 +43,25 @@ jobs:
           test -s engine/test_risk_engine.py
           test -s engine/test_gemini_reviewer.py
 
+      - name: Migrate Gemini reviewer to Gemini 3.8 Flash
+        working-directory: engine
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("main.py")
+          source = p.read_text(encoding="utf-8")
+          old = "gemini-2.5-flash"
+          new = "gemini-3.8-flash"
+          if old in source:
+              source = source.replace(old, new)
+              p.write_text(source, encoding="utf-8")
+              print("Migrated Gemini reviewer model: gemini-2.5-flash -> gemini-3.8-flash")
+          elif new in source:
+              print("Gemini reviewer already uses gemini-3.8-flash")
+          else:
+              raise SystemExit("Could not find a supported Gemini model identifier in engine/main.py")
+          PY
+
       - name: Verify extracted package has regime safety and Diagnostic v2
         working-directory: engine
         run: |
