@@ -41,13 +41,25 @@ def score_symbol(symbol,df):
     rv=rsi(df.close)
     bg=max(0,(hh-close)/a); sg=max(0,(close-ll)/a); eg=abs(close-ema)/a
     candidates=[]
-    s3=max(0,100-min(bg/1.5,1)*65)+(min(max(vr-1,0)*20,20))
-    if close>=hh: s3=max(s3,80)
-    candidates.append(("S3/S5",min(s3,100),f"breakout gap {bg:.2f} ATR; volume {vr:.2f}x"))
+
+    # S3/S5: candidate only after a real breakout or a very tight reclaim.
+    # Being merely close to the prior high is not enough; this blocks flat
+    # price / zero-RSI false positives while retaining genuine momentum setups.
+    prev_close=float(df.close.iloc[-2])
+    last_open=float(df.open.iloc[-1])
+    breakout_confirmed=close>=hh
+    reclaim_confirmed=(close>prev_close and close>=last_open and bg<=0.25 and vr>=1.5)
+    if breakout_confirmed or reclaim_confirmed:
+        s3=max(0,100-min(bg/1.5,1)*65)+(min(max(vr-1,0)*20,20))
+        if breakout_confirmed: s3=max(s3,80)
+    else:
+        s3=0
+    candidates.append(("S3/S5",min(s3,100),
+                       f"breakout gap {bg:.2f} ATR; volume {vr:.2f}x; "
+                       f"breakout={'PASS' if breakout_confirmed else 'FAIL'}; "
+                       f"reclaim={'PASS' if reclaim_confirmed else 'FAIL'}"))
 
     # S1 requires support proximity plus an actual bullish reversal/response.
-    # This prevents flat-price / RSI-artifact candidates while preserving
-    # genuine pullback-to-support setups that start reclaiming the level.
     prev_close=float(df.close.iloc[-2])
     last_open=float(df.open.iloc[-1])
     recent_low=float(df.low.iloc[-4:].min())
