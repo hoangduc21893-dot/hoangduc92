@@ -4,7 +4,7 @@ VN30F1M Payload Probe v2
 - DATA COLLECTION ONLY: no signals, no orders, no Telegram.
 - Probes the correct DNSE/Entrade history endpoints separately:
     * VN30F1M -> derivative endpoint
-    * VN30    -> stock endpoint
+    * VN30    -> index endpoint
 - Captures status, URL, raw payload and candidate OI/basis/volume/timestamp fields.
 - Never invents missing values.
 """
