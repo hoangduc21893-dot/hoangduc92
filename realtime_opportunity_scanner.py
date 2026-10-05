@@ -44,14 +44,30 @@ def score_symbol(symbol,df):
     s3=max(0,100-min(bg/1.5,1)*65)+(min(max(vr-1,0)*20,20))
     if close>=hh: s3=max(s3,80)
     candidates.append(("S3/S5",min(s3,100),f"breakout gap {bg:.2f} ATR; volume {vr:.2f}x"))
-    s1=max(0,100-min(sg/2,1)*65)+(25 if 35<=rv<=55 else 10 if 30<=rv<=60 else 0)
-    candidates.append(("S1",min(s1,100),f"support gap {sg:.2f} ATR; RSI {rv:.1f}"))
+
+    # S1 requires support proximity plus an actual bullish reversal/response.
+    # This prevents flat-price / RSI-artifact candidates while preserving
+    # genuine pullback-to-support setups that start reclaiming the level.
+    prev_close=float(df.close.iloc[-2])
+    last_open=float(df.open.iloc[-1])
+    recent_low=float(df.low.iloc[-4:].min())
+    bounce_atr=max(0,(close-recent_low)/a)
+    reversal_confirmed=(close>prev_close and close>=last_open and bounce_atr>=0.15)
+    if reversal_confirmed:
+        s1=max(0,100-min(sg/2,1)*65)+(25 if 35<=rv<=55 else 10 if 30<=rv<=60 else 0)
+    else:
+        s1=0
+    candidates.append(("S1",min(s1,100),
+                       f"support gap {sg:.2f} ATR; RSI {rv:.1f}; "
+                       f"reversal={'PASS' if reversal_confirmed else 'FAIL'}"))
+
     # S2 requires both oversold RSI and meaningful downside deviation.
     if close < ema and eg >= 0.30 and rv <= 45:
         s2=max(0,100-min(eg/2,1)*70)+25
     else:
         s2=0
     candidates.append(("S2",min(s2,100),f"EMA20 gap {eg:.2f} ATR; RSI {rv:.1f}"))
+
     trend=close>=ema>=sma
     s4=max(0,100-min(eg/1.5,1)*70)+(20 if trend else 0) if close>ema and eg>=0.20 and trend else 0
     candidates.append(("S4",min(s4,100),f"EMA20 gap {eg:.2f} ATR; trend={'PASS' if trend else 'FAIL'}"))
