@@ -1,4 +1,4 @@
-name: MWG Breakout Watch
+name: DS1 Conservative Watch
 
 on:
   schedule:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: mwg-breakout-watch
+  group: ds1-conservative-watch
   cancel-in-progress: true
 
 jobs:
@@ -24,8 +24,8 @@ jobs:
       - name: Install dependencies
         run: python -m pip install requests
 
-      - name: Run MWG breakout watcher
+      - name: Run DS1 conservative watcher
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python scripts/mwg_breakout_watch.py
+        run: python scripts/ds1_watch.py
