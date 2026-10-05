@@ -127,7 +127,7 @@ def fetch_snapshot() -> dict:
                 "high":_to_float(row,"HI","high"),
                 "low":_to_float(row,"LO","low"),
                 "volume":volume,
-                "timestamp":_parse_ts(row.get("TST") or row.get("TS") or row.get("TTM") or row.get("TIME")),
+                "timestamp":_parse_ts(row.get("t") or row.get("TST") or row.get("TS") or row.get("TTM") or row.get("TIME")),
                 "expiry":row.get("LTD"),
                 "market_status":row.get("TSI"),
                 "raw_keys":sorted(row.keys()),
