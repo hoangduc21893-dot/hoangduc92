@@ -1,4 +1,4 @@
-import argparse, json, os, time
+import json, os, time
 import pandas as pd
 import requests
 
@@ -46,10 +46,14 @@ def score_symbol(symbol,df):
     candidates.append(("S3/S5",min(s3,100),f"breakout gap {bg:.2f} ATR; volume {vr:.2f}x"))
     s1=max(0,100-min(sg/2,1)*65)+(25 if 35<=rv<=55 else 10 if 30<=rv<=60 else 0)
     candidates.append(("S1",min(s1,100),f"support gap {sg:.2f} ATR; RSI {rv:.1f}"))
-    s2=max(0,100-min(eg/2,1)*70)+(25 if rv<=40 else 0)
+    # S2 requires both oversold RSI and meaningful downside deviation.
+    if close < ema and eg >= 0.30 and rv <= 45:
+        s2=max(0,100-min(eg/2,1)*70)+25
+    else:
+        s2=0
     candidates.append(("S2",min(s2,100),f"EMA20 gap {eg:.2f} ATR; RSI {rv:.1f}"))
     trend=close>=ema>=sma
-    s4=max(0,100-min(eg/1.5,1)*70)+(20 if trend else 0)
+    s4=max(0,100-min(eg/1.5,1)*70)+(20 if trend else 0) if close>ema and eg>=0.20 and trend else 0
     candidates.append(("S4",min(s4,100),f"EMA20 gap {eg:.2f} ATR; trend={'PASS' if trend else 'FAIL'}"))
     best=max(candidates,key=lambda x:x[1])
     if best[1]<THRESHOLD: return None
