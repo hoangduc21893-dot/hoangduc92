@@ -20,7 +20,16 @@ from zoneinfo import ZoneInfo
 import requests
 
 SYMBOL="VN30F1M"; SPOT="VN30"
-BASE_URL="https://services.entrade.com.vn/chart-api/v2/ohlcs/stock"
+ENDPOINTS = {
+    "VN30F1M": [
+        "https://services.entrade.com.vn/chart-api/v2/ohlcs/derivative",
+        "https://api.dnse.com.vn/chart-api/v2/ohlcs/derivative",
+    ],
+    "VN30": [
+        "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+        "https://api.dnse.com.vn/chart-api/v2/ohlcs/stock",
+    ],
+}
 RISK_PER_TRADE_VND=400_000; POINT_VALUE_VND=100_000; MAX_CONTRACTS=1
 MIN_SCORE=75; MIN_RR=2.0; MIN_VOL_RATIO=1.30
 OI_MIN_CHANGE_PCT=0.0; BASIS_SOFT_LIMIT=12.0; MAX_CHASE_POINTS=2.5
@@ -35,16 +44,34 @@ def in_session(now):
 
 def fetch(symbol,resolution,seconds):
     n=int(time.time())
-    r=requests.get(BASE_URL,params={"from":n-seconds,"to":n,"symbol":symbol,"resolution":resolution},headers=HEADERS,timeout=15)
-    r.raise_for_status(); d=r.json()
-    if not isinstance(d,dict): raise RuntimeError(f"{symbol}: invalid DNSE response")
-    return d
+    params={"from":n-seconds,"to":n,"symbol":symbol,"resolution":resolution}
+    attempts=[]
+    for endpoint in ENDPOINTS[symbol]:
+        try:
+            r=requests.get(endpoint,params=params,headers=HEADERS,timeout=15)
+            attempts.append({"endpoint":endpoint,"status_code":r.status_code,"url":r.url})
+            if not r.ok:
+                continue
+            d=r.json()
+            if not isinstance(d,dict):
+                raise RuntimeError(f"{symbol}: invalid DNSE response")
+            return d, endpoint, attempts
+        except Exception as e:
+            attempts.append({"endpoint":endpoint,"error":f"{type(e).__name__}: {e}"})
+    raise RuntimeError(f"{symbol}: all DNSE endpoints failed: {attempts}")
+
+def _series(d, keys):
+    for key in keys:
+        value=d.get(key)
+        if isinstance(value,list):
+            return value
+    return []
 
 def bars(d):
-    vals=[d.get("t") or d.get("time") or [],d.get("o") or d.get("open") or [],
-          d.get("h") or d.get("high") or [],d.get("l") or d.get("low") or [],
-          d.get("c") or d.get("close") or [],d.get("v") or d.get("volume") or []]
-    oi=d.get("oi") or d.get("openInterest") or d.get("open_interest") or []
+    vals=[_series(d,("t","time")), _series(d,("o","open")),
+          _series(d,("h","high")), _series(d,("l","low")),
+          _series(d,("c","close")), _series(d,("v","volume"))]
+    oi=_series(d,("oi","openInterest","open_interest","openinterest"))
     n=min(map(len,vals)); out=[]
     for i in range(n):
         try:
@@ -176,13 +203,20 @@ def telegram(msg):
 def main():
     now=datetime.now(VN_TZ)
     if now.weekday()>=5 or not in_session(now):return 0
-    fut=bars(fetch(SYMBOL,"1",86400));v30=bars(fetch(SPOT,"5",5*86400))
-    if len(fut)<70 or len(v30)<30:raise RuntimeError("Insufficient DNSE data")
+    fut_payload,fut_endpoint,fut_attempts=fetch(SYMBOL,"1",86400)
+    v30_payload,v30_endpoint,v30_attempts=fetch(SPOT,"5",5*86400)
+    fut=bars(fut_payload);v30=bars(v30_payload)
+    if len(fut)<70 or len(v30)<30:
+        raise RuntimeError(
+            f"Insufficient DNSE data | VN30F1M endpoint={fut_endpoint} bars={len(fut)} | "
+            f"VN30 endpoint={v30_endpoint} bars={len(v30)}"
+        )
     reg=market_regime(fut);vw=vwap(fut);vr=volume_ratio(fut);bs=basis_snapshot(fut[:-1],v30[:-1]);oi=oi_snapshot(fut)
+    oi_status="AVAILABLE" if oi is not None else "UNAVAILABLE"
     candidates=[f1(fut[:-1],reg,vw),f2(fut[:-1],vr,vw),f3(fut[:-1],reg),f4(fut[:-1],vw)]
     candidates=[x for x in candidates if x]
     if not candidates:
-        history({"timestamp":now.isoformat(),"symbol":SYMBOL,"status":"WAIT","market_regime":reg,"basis":bs,"oi":oi,"reason":"no confirmed F1-F4 setup"});return 0
+        history({"timestamp":now.isoformat(),"symbol":SYMBOL,"status":"WAIT","market_regime":reg,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"reason":"no confirmed F1-F4 setup"});return 0
     priority={"F2 Breakout + Retest":4,"F1 Trend Following":3,"F4 VWAP Reclaim":2,"F4 VWAP Breakdown":2,"F3 Range Reversal":1}
     candidates.sort(key=lambda x:priority[x["strategy"]],reverse=True)
     for sig in candidates:
@@ -201,7 +235,7 @@ def main():
         if sc<MIN_SCORE:blocked.append(f"score={sc}<75")
         if risk is None:blocked.append("risk_engine_failed_or_risk>400k")
         rec={"timestamp":now.isoformat(),"symbol":SYMBOL,"strategy":sig["strategy"],"side":sig["side"],"market_regime":reg,"score":sc,"score_parts":parts,
-             "entry":sig["entry"],"trigger":sig["trigger"],"volume_ratio":vr,"basis":bs,"oi":oi,"vn30_confirmation":vn_ok,"risk":risk,
+             "entry":sig["entry"],"trigger":sig["trigger"],"volume_ratio":vr,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"vn30_confirmation":vn_ok,"risk":risk,
              "status":"BLOCKED" if blocked else "ALERTED","block_reasons":blocked}
         history(rec)
         if blocked:continue
