@@ -26,8 +26,8 @@ ENDPOINTS = {
         "https://api.dnse.com.vn/chart-api/v2/ohlcs/derivative",
     ],
     "VN30": [
-        "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
-        "https://api.dnse.com.vn/chart-api/v2/ohlcs/stock",
+        "https://services.entrade.com.vn/chart-api/v2/ohlcs/index",
+        "https://api.dnse.com.vn/chart-api/v2/ohlcs/index",
     ],
 }
 RISK_PER_TRADE_VND=400_000; POINT_VALUE_VND=100_000; MAX_CONTRACTS=1
@@ -213,10 +213,11 @@ def main():
         )
     reg=market_regime(fut);vw=vwap(fut);vr=volume_ratio(fut);bs=basis_snapshot(fut[:-1],v30[:-1]);oi=oi_snapshot(fut)
     oi_status="AVAILABLE" if oi is not None else "UNAVAILABLE"
+    oi_source="DNSE chart-api v2 derivative payload"
     candidates=[f1(fut[:-1],reg,vw),f2(fut[:-1],vr,vw),f3(fut[:-1],reg),f4(fut[:-1],vw)]
     candidates=[x for x in candidates if x]
     if not candidates:
-        history({"timestamp":now.isoformat(),"symbol":SYMBOL,"status":"WAIT","market_regime":reg,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"reason":"no confirmed F1-F4 setup"});return 0
+        history({"timestamp":now.isoformat(),"symbol":SYMBOL,"status":"WAIT","market_regime":reg,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"oi_source":oi_source,"reason":"no confirmed F1-F4 setup"});return 0
     priority={"F2 Breakout + Retest":4,"F1 Trend Following":3,"F4 VWAP Reclaim":2,"F4 VWAP Breakdown":2,"F3 Range Reversal":1}
     candidates.sort(key=lambda x:priority[x["strategy"]],reverse=True)
     for sig in candidates:
@@ -235,7 +236,7 @@ def main():
         if sc<MIN_SCORE:blocked.append(f"score={sc}<75")
         if risk is None:blocked.append("risk_engine_failed_or_risk>400k")
         rec={"timestamp":now.isoformat(),"symbol":SYMBOL,"strategy":sig["strategy"],"side":sig["side"],"market_regime":reg,"score":sc,"score_parts":parts,
-             "entry":sig["entry"],"trigger":sig["trigger"],"volume_ratio":vr,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"vn30_confirmation":vn_ok,"risk":risk,
+             "entry":sig["entry"],"trigger":sig["trigger"],"volume_ratio":vr,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"oi_source":oi_source,"vn30_confirmation":vn_ok,"risk":risk,
              "status":"BLOCKED" if blocked else "ALERTED","block_reasons":blocked}
         history(rec)
         if blocked:continue
