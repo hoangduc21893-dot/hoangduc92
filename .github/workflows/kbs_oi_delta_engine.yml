@@ -1,0 +1,21 @@
+name: KBS OI Delta Engine v1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/kbs_oi_delta_engine_v1.py'
+      - 'scripts/test_kbs_oi_delta_engine_v1.py'
+      - '.github/workflows/kbs_oi_delta_engine.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Unit tests
+        run: python -m unittest -v scripts/test_kbs_oi_delta_engine_v1.py
