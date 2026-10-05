@@ -1,0 +1,27 @@
+name: KBS OI Probe v1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/kbs_oi_probe_v1.py'
+      - '.github/workflows/kbs_oi_probe.yml'
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - name: Run KBS OI probe
+        run: python scripts/kbs_oi_probe_v1.py
+      - name: Upload KBS OI probe
+        uses: actions/upload-artifact@v4
+        with:
+          name: kbs-oi-probe-v1
+          path: data/kbs_oi_probe_v1.jsonl
+          retention-days: 30
