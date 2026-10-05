@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""DS1 conservative scanner: S1-S5 + Market Regime + Risk Engine + signal history.
-
-FALSE POSITIVE = zero tolerance. FALSE NEGATIVE = acceptable.
-Only confirmed S1-S5 setups that pass regime, score and risk gates can become Telegram alerts.
-"""
+"""DS1 conservative scanner: S1-S5 + Market Regime + Risk Engine + signal history."""
 from __future__ import annotations
 import json, math, os, time
 from datetime import datetime, time as dtime
@@ -11,7 +7,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 import requests
 
-DS1 = ["PVT","PVS","MSB","HAH","BSR","VGC","DHC","VTP","VPB","MWG","HDB","PET"]
+DS1 = ["PVT","PVS","MSB","HAH","BSR","VGC","DHC","VTP","VPB","MWG","HDB","PET","HPG"]
 NAV_VND=100_000_000
 RISK_PER_TRADE_VND=400_000
 MAX_POSITION_PCT=0.20
@@ -27,7 +23,6 @@ S1_PULLBACK_PCT=2.0
 S2_DEVIATION_PCT=4.0
 S2_RSI_MAX=35.0
 S2_SUPPORT_TOLERANCE_PCT=1.5
-S5_SEGMENT_DAYS=5
 S5_RANGE_RATIO_MAX=0.80
 S5_VOLUME_RATIO_MAX=0.85
 S5_BREAKOUT_LOOKBACK=10
@@ -138,8 +133,7 @@ def score_signal(daily,vr,rs,strategy,risk):
     d=daily[:-1]; c=[b["c"] for b in d]; last,prev=d[-1],d[-2]
     ma20,ma50=sma(c,20),sma(c,50)
     pa=(10 if last["c"]>last["o"] else 0)+(10 if last["c"]>prev["c"] else 0)
-    if strategy=="S3 Breakout Momentum": structure=25
-    elif strategy=="S5 VCP Breakout": structure=25
+    if strategy in ("S3 Breakout Momentum","S5 VCP Breakout"): structure=25
     elif strategy=="S4 Pullback Trend Following": structure=22 if abs(last["c"]-ma20)/ma20<=0.015 else 17
     elif strategy=="S2 Mean Reversion": structure=20 if last["c"]>prev["c"] else 15
     else: structure=22 if ma20>ma50 else 16
@@ -155,14 +149,10 @@ def detect_s1(daily,intraday,vr):
     if len(d)<55 or len(intraday)<5: return None
     c=[b["c"] for b in d]; ma20,ma50=sma(c,20),sma(c,50)
     last,prev=d[-1],d[-2]
-    pullback=abs(last["c"]-ma20)/ma20*100<=S1_PULLBACK_PCT
-    trend=ma20>ma50 and last["c"]>ma50
-    reversal=bullish_reversal(last,prev)
-    avg20v=sma([b["v"] for b in d],20)
-    volume_ok=avg20v>0 and last["v"]<=avg20v*1.30
-    if trend and pullback and reversal and volume_ok:
-        return {"strategy":"S1 Stock Swing Trading","price":intraday[-2]["c"],"level":ma20,
-                "trigger":f"MA20 {ma20:.2f} > MA50 {ma50:.2f} + pullback/reversal + volume controlled"}
+    if ma20>ma50 and last["c"]>ma50 and abs(last["c"]-ma20)/ma20*100<=S1_PULLBACK_PCT and bullish_reversal(last,prev):
+        avg20v=sma([b["v"] for b in d],20)
+        if avg20v>0 and last["v"]<=avg20v*1.30:
+            return {"strategy":"S1 Stock Swing Trading","price":intraday[-2]["c"],"level":ma20,"trigger":f"MA20 {ma20:.2f} > MA50 {ma50:.2f} + pullback/reversal + volume controlled"}
     return None
 
 def detect_s2(daily,intraday,vr):
@@ -170,15 +160,11 @@ def detect_s2(daily,intraday,vr):
     if len(d)<30 or len(intraday)<5: return None
     c=[b["c"] for b in d]; ma20=sma(c,20); last,prev=d[-1],d[-2]
     deviation=(last["c"]/ma20-1)*100 if ma20 else 0.0
-    r=rsi(c,14)
-    support=min(b["l"] for b in d[-20:])
-    near_support=last["c"]<=support*(1+S2_SUPPORT_TOLERANCE_PCT/100)
-    reversal=bullish_reversal(last,prev)
-    avg20v=sma([b["v"] for b in d],20)
-    exhaustion=avg20v>0 and last["v"]<=avg20v*1.10
-    if deviation<=-S2_DEVIATION_PCT and r<=S2_RSI_MAX and near_support and reversal and exhaustion:
-        return {"strategy":"S2 Mean Reversion","price":intraday[-2]["c"],"level":support,
-                "trigger":f"MA20 deviation {deviation:.1f}% + RSI {r:.1f} + support {support:.2f} + reversal/exhaustion"}
+    r=rsi(c,14); support=min(b["l"] for b in d[-20:])
+    if deviation<=-S2_DEVIATION_PCT and r<=S2_RSI_MAX and last["c"]<=support*(1+S2_SUPPORT_TOLERANCE_PCT/100) and bullish_reversal(last,prev):
+        avg20v=sma([b["v"] for b in d],20)
+        if avg20v>0 and last["v"]<=avg20v*1.10:
+            return {"strategy":"S2 Mean Reversion","price":intraday[-2]["c"],"level":support,"trigger":f"MA20 deviation {deviation:.1f}% + RSI {r:.1f} + support {support:.2f} + reversal/exhaustion"}
     return None
 
 def detect_s3(daily,intraday,vr):
@@ -197,24 +183,18 @@ def detect_s3(daily,intraday,vr):
 def detect_s5(daily,intraday,vr):
     d=daily[:-1]; closed=intraday[:-1]
     if len(d)<50 or len(closed)<MIN_CLOSED_1M_BARS+1: return None
-    c=[b["c"] for b in d]
-    ma20,ma50=sma(c,20),sma(c,50)
+    c=[b["c"] for b in d]; ma20,ma50=sma(c,20),sma(c,50)
     if ma20<=ma50: return None
     segments=[d[-15:-10],d[-10:-5],d[-5:]]
-    ranges=[avg_range_pct(x) for x in segments]
-    vols=[sma([b["v"] for b in x],len(x)) for x in segments]
+    ranges=[avg_range_pct(x) for x in segments]; vols=[sma([b["v"] for b in x],len(x)) for x in segments]
     if min(ranges)<=0 or min(vols)<=0: return None
-    contracting=(ranges[1]<=ranges[0]*S5_RANGE_RATIO_MAX and ranges[2]<=ranges[1]*S5_RANGE_RATIO_MAX and
-                 vols[1]<=vols[0]*S5_VOLUME_RATIO_MAX and vols[2]<=vols[1]*S5_VOLUME_RATIO_MAX)
+    contracting=(ranges[1]<=ranges[0]*S5_RANGE_RATIO_MAX and ranges[2]<=ranges[1]*S5_RANGE_RATIO_MAX and vols[1]<=vols[0]*S5_VOLUME_RATIO_MAX and vols[2]<=vols[1]*S5_VOLUME_RATIO_MAX)
     higher_lows=min(b["l"] for b in segments[2])>=min(b["l"] for b in segments[1])
-    pivot=max(b["h"] for b in d[-S5_BREAKOUT_LOOKBACK:])
-    recent=closed[-MIN_CLOSED_1M_BARS:]
+    pivot=max(b["h"] for b in d[-S5_BREAKOUT_LOOKBACK:]); recent=closed[-MIN_CLOSED_1M_BARS:]
     confirmed=all(b["c"]>pivot for b in recent)
     retest=any(b["l"]<=pivot*(1+RETEST_TOLERANCE_PCT/100) and b["c"]>pivot for b in recent[1:])
-    chase=recent[-1]["c"]>pivot*(1+MAX_BREAKOUT_CHASE_PCT/100)
-    if contracting and higher_lows and confirmed and retest and vr>=VOLUME_RATIO_MIN and not chase:
-        return {"strategy":"S5 VCP Breakout","price":recent[-1]["c"],"level":pivot,
-                "trigger":f"VCP contraction + higher lows + 3x 1M close > {pivot:.2f} + retest + volume {vr:.2f}x"}
+    if contracting and higher_lows and confirmed and retest and vr>=VOLUME_RATIO_MIN and recent[-1]["c"]<=pivot*(1+MAX_BREAKOUT_CHASE_PCT/100):
+        return {"strategy":"S5 VCP Breakout","price":recent[-1]["c"],"level":pivot,"trigger":f"VCP contraction + higher lows + 3x 1M close > {pivot:.2f} + retest + volume {vr:.2f}x"}
     return None
 
 def detect_s4(daily,intraday):
@@ -223,19 +203,15 @@ def detect_s4(daily,intraday):
     c=[b["c"] for b in d]; ma20,ma50=sma(c,20),sma(c,50)
     if ma20<=ma50: return None
     last,prev=d[-1],d[-2]
-    near=abs(last["c"]-ma20)/ma20*100<=S4_NEAR_MA_PCT
-    reversal=last["c"]>last["o"] and last["c"]>prev["c"]
     avg20v=sma([b["v"] for b in d],20)
-    contraction=avg20v>0 and last["v"]<=avg20v*1.10
-    price=closed[-1]["c"]
-    if near and reversal and contraction and price>=last["c"]:
-        return {"strategy":"S4 Pullback Trend Following","price":price,"level":ma20,"trigger":f"MA20 {ma20:.2f} > MA50 {ma50:.2f} + pullback/reversal + volume contraction"}
+    if abs(last["c"]-ma20)/ma20*100<=S4_NEAR_MA_PCT and last["c"]>last["o"] and last["c"]>prev["c"] and avg20v>0 and last["v"]<=avg20v*1.10 and closed[-1]["c"]>=last["c"]:
+        return {"strategy":"S4 Pullback Trend Following","price":closed[-1]["c"],"level":ma20,"trigger":f"MA20 {ma20:.2f} > MA50 {ma50:.2f} + pullback/reversal + volume contraction"}
     return None
 
 def risk_engine(price,level,daily,strategy):
     d=daily[:-1]; a=atr(d,14)
     if a<=0 or price<=0: return None
-    recent_low=min(b["l"] for b in d[-3:] if strategy=="S3 Breakout Momentum") if strategy=="S3 Breakout Momentum" else min(b["l"] for b in d[-5:])
+    recent_low=min(b["l"] for b in d[-3:]) if strategy=="S3 Breakout Momentum" else min(b["l"] for b in d[-5:])
     sl=max(0.01,min(level-0.8*a,recent_low))
     risk_per_share=price-sl
     if risk_per_share<=0: return None
@@ -262,7 +238,7 @@ def main():
             intraday=bars(fetch(symbol,"1",24*60*60)); daily=bars(fetch(symbol,"1D",120*24*60*60))
             if len(intraday)<10 or len(daily)<60: print(f"{symbol}: insufficient data"); continue
             vr=volume_ratio(intraday,daily,now); rs=relative_strength(daily,vn30)
-                    candidates=[
+            candidates=[
                 detect_s5(daily,intraday,vr),
                 detect_s3(daily,intraday,vr),
                 detect_s4(daily,intraday),
@@ -271,21 +247,13 @@ def main():
             ]
             candidates=[x for x in candidates if x is not None]
             if not candidates: print(f"{symbol}: no confirmed S1-S5 setup"); continue
-            # Prefer the most specific/strongest setup while keeping every strategy available to the scanner.
             priority={"S5 VCP Breakout":5,"S3 Breakout Momentum":4,"S4 Pullback Trend Following":3,"S1 Stock Swing Trading":2,"S2 Mean Reversion":1}
             signal=max(candidates,key=lambda x:priority.get(x["strategy"],0))
-            if signal is None: print(f"{symbol}: no confirmed setup"); continue
-            risk=risk_engine(signal["price"],signal["level"],daily,signal["strategy"]); score,parts=score_signal(daily,vr,rs,signal["strategy"],risk)
+            risk=risk_engine(signal["price"],signal["level"],daily,signal["strategy"])
+            score,parts=score_signal(daily,vr,rs,signal["strategy"],risk)
             blocked=[]
-            allowed_regimes={
-                "S1 Stock Swing Trading":{"TREND_UP","RANGE"},
-                "S2 Mean Reversion":{"RANGE"},
-                "S3 Breakout Momentum":{"TREND_UP"},
-                "S4 Pullback Trend Following":{"TREND_UP"},
-                "S5 VCP Breakout":{"TREND_UP"},
-            }
-            if regime not in allowed_regimes.get(signal["strategy"],set()):
-                blocked.append(f"regime={regime} not allowed for {signal['strategy']}")
+            allowed_regimes={"S1 Stock Swing Trading":{"TREND_UP","RANGE"},"S2 Mean Reversion":{"RANGE"},"S3 Breakout Momentum":{"TREND_UP"},"S4 Pullback Trend Following":{"TREND_UP"},"S5 VCP Breakout":{"TREND_UP"}}
+            if regime not in allowed_regimes.get(signal["strategy"],set()): blocked.append(f"regime={regime} not allowed for {signal['strategy']}")
             if score<MIN_SCORE: blocked.append(f"score={score}<{MIN_SCORE}")
             if risk is None: blocked.append("risk_engine_failed")
             elif risk["rr"]<MIN_RR: blocked.append(f"rr={risk['rr']:.2f}<2.0")
@@ -295,12 +263,7 @@ def main():
             key=f"{now:%Y-%m-%d}|{symbol}|{signal['strategy']}"
             if state.get("alert_keys",{}).get(key): print(f"{symbol}: alert already sent"); continue
             r=risk
-            message=(f"🚨 DS1 CONFIRMED — {symbol}\n\n"
-                     f"Strategy: {signal['strategy']}\nMarket Regime: {regime}\nScore: {score}/100\n"
-                     f"Entry: {r['entry']:.2f}\nSL: {r['sl']:.2f}\nTP1: {r['tp1']:.2f}\nTP2: {r['tp2']:.2f}\n"
-                     f"R:R: 1:{r['rr']:.2f}\nSize: {r['shares']:,} cp | Position: {r['position_value']:,.0f} VND\n"
-                     f"Risk: {r['risk_vnd']:,.0f} VND\nVolume: {vr:.2f}x | RS20D: {rs*100:.1f}pp vs VN30\n"
-                              f"Trigger: {signal['trigger']}\n\nAction: BUY only after final manual check.\nSafety: FALSE POSITIVE = NGHIÊM CẤM.")
+            message=(f"🚨 DS1 CONFIRMED — {symbol}\n\nStrategy: {signal['strategy']}\nMarket Regime: {regime}\nScore: {score}/100\nEntry: {r['entry']:.2f}\nSL: {r['sl']:.2f}\nTP1: {r['tp1']:.2f}\nTP2: {r['tp2']:.2f}\nR:R: 1:{r['rr']:.2f}\nSize: {r['shares']:,} cp | Position: {r['position_value']:,.0f} VND\nRisk: {r['risk_vnd']:,.0f} VND\nVolume: {vr:.2f}x | RS20D: {rs*100:.1f}pp vs VN30\nTrigger: {signal['trigger']}\n\nAction: BUY only after final manual check.\nSafety: FALSE POSITIVE = NGHIÊM CẤM.")
             telegram(message); state.setdefault("alert_keys",{})[key]=now.isoformat(); save_state(state); alerts+=1
         except Exception as exc: print(f"{symbol}: ERROR {exc}")
     print(f"DS1 scan complete. Alerts={alerts}/{len(DS1)}")
