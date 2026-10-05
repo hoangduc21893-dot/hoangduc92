@@ -23,8 +23,10 @@ MAX_CHASE = 74.8
 SL = 72.8
 TP1 = 76.5
 TP2 = 79.0
-MIN_CLOSES = 2
-VOLUME_RATIO = 1.30
+MIN_CLOSES = 3
+VOLUME_RATIO = 1.50
+REQUIRE_RETEST = True
+RETEST_TOLERANCE = 0.25
 VN_TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 STATE_PATH = Path("data/mwg_breakout_state.json")
 BASE_URL = "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock"
@@ -128,13 +130,24 @@ def main() -> int:
     if len(intraday) < MIN_CLOSES or len(daily) < 10:
         raise RuntimeError("Insufficient DNSE data for MWG breakout check")
 
-    # Use the last two closed/available 1m bars. GitHub polling is periodic,
-    # so the newest bar may still be forming; requiring two consecutive closes
-    # materially reduces single-tick false breakouts.
-    recent = intraday[-MIN_CLOSES:]
+    # Conservative mode: ignore the newest 1m bar because it may still be forming.
+    # Require 3 prior consecutive closed bars strictly above the breakout level.
+    closed = intraday[:-1]
+    if len(closed) < MIN_CLOSES + 1:
+        raise RuntimeError("Insufficient closed 1m bars for conservative breakout check")
+    recent = closed[-MIN_CLOSES:]
     closes = [b["c"] for b in recent]
     price = closes[-1]
-    confirmed = all(c >= BREAKOUT for c in closes)
+    confirmed = all(c > BREAKOUT for c in closes)
+
+    # Require an actual trade-through and a successful hold/retest of the breakout level.
+    breakout_bar = recent[0]
+    traded_through = breakout_bar["h"] > BREAKOUT
+    retest_ok = any(
+        b["l"] <= BREAKOUT + RETEST_TOLERANCE and b["c"] > BREAKOUT
+        for b in recent[1:]
+    )
+    structure_ok = traded_through and (retest_ok if REQUIRE_RETEST else True)
 
     # Compare cumulative session volume with the expected share of 20-day ADV.
     today = now.date()
@@ -150,11 +163,12 @@ def main() -> int:
 
     print(
         f"MWG price={price:.2f} closes={closes} "
-        f"breakout={confirmed} cum_volume={cumulative_volume:.0f} "
-        f"volume_ratio={volume_ratio:.2f} volume_ok={volume_ok}"
+        f"breakout={confirmed} structure_ok={structure_ok} "
+        f"cum_volume={cumulative_volume:.0f} volume_ratio={volume_ratio:.2f} "
+        f"volume_ok={volume_ok}"
     )
 
-    if not (confirmed and volume_ok):
+    if not (confirmed and structure_ok and volume_ok):
         return 0
 
     state = load_state()
@@ -183,7 +197,7 @@ def main() -> int:
         f"TP1: {TP1:.1f} (R:R ~1:{rr1:.1f})\n"
         f"TP2: {TP2:.1f} (R:R ~1:{rr2:.1f})\n"
         f"Action: {action}\n"
-        "Rule: 2 nến 1M liên tiếp trên breakout + volume xác nhận."
+        "Rule: 3 nến 1M đã đóng trên breakout + trade-through + retest/hold + volume xác nhận."
     )
 
     token = os.environ["TELEGRAM_BOT_TOKEN"]
