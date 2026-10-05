@@ -40,8 +40,11 @@ jobs:
           test -s engine/requirements.txt
           test -s engine/test_risk_engine.py
           test -s engine/test_gemini_reviewer.py
+          test -s engine/test_setup_alerts.py
           grep -q 'client.interactions.create' engine/main.py
           grep -q 'gemini-3.8-flash' engine/main.py
+          grep -q 'def eligible_setup_alerts' engine/main.py
+          grep -q 'No READY S1-S5 setup; no Telegram alert sent.' engine/main.py
           ! grep -q 'client.models.generate_content' engine/main.py
 
       - name: Install dependencies
@@ -51,7 +54,7 @@ jobs:
         working-directory: engine
         run: python -m unittest discover -v
 
-      - name: Run Trading Engine
+      - name: Run DS1 scan and send READY-only setup alerts
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-3.8-flash
@@ -67,3 +70,4 @@ jobs:
           path: data/signal_history.jsonl
           if-no-files-found: ignore
           retention-days: 90
+
