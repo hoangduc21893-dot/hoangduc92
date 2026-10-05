@@ -10,7 +10,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 import requests
 
-BASE = "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock"
+BASES = [
+    "https://services.entrade.com.vn/chart-api/v2/ohlcs/derivative",
+    "https://api.dnse.com.vn/chart-api/v2/ohlcs/derivative",
+]
 SYMBOLS = {"VN30F1M": "VN30F1M", "VN30": "VN30"}
 RESOLUTION = "1"
 INTERVAL_SEC = int(os.getenv("PROBE_INTERVAL_SEC", "10"))
@@ -23,9 +26,21 @@ def epoch_now():
 
 def request_symbol(symbol, start, end):
     params = {"from": start, "to": end, "symbol": symbol, "resolution": RESOLUTION}
-    r = requests.get(BASE, params=params, timeout=15)
-    r.raise_for_status()
-    return r.json(), r.url
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Origin": "https://banggia.dnse.com.vn",
+        "Referer": "https://banggia.dnse.com.vn/",
+        "User-Agent": "Mozilla/5.0",
+    }
+    last_error = None
+    for base in BASES:
+        try:
+            r = requests.get(base, params=params, headers=headers, timeout=15)
+            r.raise_for_status()
+            return r.json(), r.url
+        except Exception as e:
+            last_error = e
+    raise last_error
 
 def key_candidates(obj, needles=("oi", "openinterest", "open_interest", "basis", "volume", "timestamp", "time")):
     hits = {}
