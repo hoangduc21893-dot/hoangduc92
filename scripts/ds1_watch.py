@@ -108,7 +108,7 @@ def relative_strength(symbol_daily,vn30):
     if len(a)<21 or len(b)<21: return 0.0
     return (a[-1]["c"]/a[-21]["c"]-1)-(b[-1]["c"]/b[-21]["c"]-1)
 
-def score_signal(daily,vr,rs,strategy):
+def score_signal(daily,vr,rs,strategy,risk):
     d=daily[:-1]; c=[b["c"] for b in d]; last,prev=d[-1],d[-2]
     ma20,ma50=sma(c,20),sma(c,50)
     pa=(10 if last["c"]>last["o"] else 0)+(10 if last["c"]>prev["c"] else 0)
@@ -116,8 +116,9 @@ def score_signal(daily,vr,rs,strategy):
     volume=20 if vr>=1.80 else 17 if vr>=1.50 else 10
     momentum=15 if last["c"]>ma20>ma50 else 8 if last["c"]>ma50 else 3
     rs_score=15 if rs>=0.05 else 12 if rs>=0.02 else 8 if rs>=0 else 4
-    base=min(95,structure+pa+volume+momentum+rs_score)
-    return base,{"structure":structure,"price_action":pa,"volume":volume,"momentum":momentum,"relative_strength":rs_score,"base_score":base}
+    rr_score=5 if risk and risk["rr"]>=MIN_RR else 0
+    base=min(100,structure+pa+volume+momentum+rs_score+rr_score)
+    return base,{"structure":structure,"price_action":pa,"volume":volume,"momentum":momentum,"relative_strength":rs_score,"rr":rr_score,"base_score":base}
 
 def detect_s3(daily,intraday,vr):
     closed=intraday[:-1]; d=daily[:-1]
@@ -179,7 +180,7 @@ def main():
             vr=volume_ratio(intraday,daily,now); rs=relative_strength(daily,vn30)
             signal=detect_s3(daily,intraday,vr) or detect_s4(daily,intraday)
             if signal is None: print(f"{symbol}: no confirmed setup"); continue
-            score,parts=score_signal(daily,vr,rs,signal["strategy"]); risk=risk_engine(signal["price"],signal["level"],daily,signal["strategy"])
+            risk=risk_engine(signal["price"],signal["level"],daily,signal["strategy"]); score,parts=score_signal(daily,vr,rs,signal["strategy"],risk)
             blocked=[]
             if regime!="TREND_UP": blocked.append(f"regime={regime}")
             if score<MIN_SCORE: blocked.append(f"score={score}<{MIN_SCORE}")
