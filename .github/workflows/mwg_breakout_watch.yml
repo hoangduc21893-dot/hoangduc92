@@ -16,6 +16,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Restore DS1 signal history and state
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/signal_history.jsonl
+            data/ds1_watch_state.json
+          key: ds1-history-${{ github.run_id }}
+          restore-keys: ds1-history-
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -29,3 +38,12 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/ds1_watch.py
+
+      - name: Save DS1 signal history
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-signal-history-${{ github.run_id }}
+          path: data/signal_history.jsonl
+          if-no-files-found: ignore
+          retention-days: 90
