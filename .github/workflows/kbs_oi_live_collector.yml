@@ -1,0 +1,41 @@
+name: KBS OI Live Collector v1
+
+on:
+  workflow_dispatch:
+    inputs:
+      duration_sec:
+        description: "Collection duration in seconds"
+        required: true
+        default: "600"
+        type: string
+      interval_sec:
+        description: "Seconds between KBS snapshots"
+        required: true
+        default: "10"
+        type: string
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install requests
+      - name: Unit tests
+        run: python -m unittest -v scripts/test_kbs_oi_live_collector_v1.py
+      - name: Collect KBS OI live samples
+        env:
+          KBS_OI_DURATION_SEC: ${{ inputs.duration_sec }}
+          KBS_OI_INTERVAL_SEC: ${{ inputs.interval_sec }}
+        run: python scripts/kbs_oi_live_collector_v1.py
+      - name: Upload live OI series
+        uses: actions/upload-artifact@v4
+        with:
+          name: kbs-oi-live-v1
+          path: |
+            data/kbs_oi_live_v1.jsonl
+            data/kbs_oi_live_v1_summary.json
+          retention-days: 30
