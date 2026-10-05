@@ -17,10 +17,17 @@ class ScannerTests(unittest.TestCase):
         self.assertIsNotNone(x)
         self.assertIn("candidate_score",x)
         self.assertIn("candidate_strategy",x)
+
     def test_far_symbol_not_candidate(self):
         d=df(); d["close"]=80.; d["open"]=80.; d["high"]=80.5; d["low"]=79.5; d["volume"]=500.
         self.assertIsNone(scanner.score_symbol("TEST",d))
+
     def test_short_data_safe(self):
         self.assertIsNone(scanner.score_symbol("TEST",df().head(20)))
+
+    def test_flat_at_ema_with_zero_rsi_not_mean_reversion_candidate(self):
+        d=df()
+        d["close"]=80.; d["open"]=80.; d["high"]=80.5; d["low"]=79.5; d["volume"]=500.
+        self.assertIsNone(scanner.score_symbol("TEST",d))
 
 if __name__=="__main__": unittest.main()
