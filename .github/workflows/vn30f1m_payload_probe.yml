@@ -20,8 +20,9 @@ jobs:
       - name: Run payload probe
         run: python scripts/vn30f1m_payload_probe.py
         env:
-          PROBE_DURATION_SEC: "1200"
+          PROBE_DURATION_SEC: "60"
           PROBE_INTERVAL_SEC: "10"
+          PROBE_LOOKBACK_SEC: "86400"
       - name: Upload raw probe
         uses: actions/upload-artifact@v4
         with:
