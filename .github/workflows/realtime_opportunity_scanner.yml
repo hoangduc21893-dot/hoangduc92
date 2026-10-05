@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '0 2 * * 1-5'
     - cron: '0 6 * * 1-5'
+  push:
+    branches: [main]
+    paths:
+      - 'realtime_opportunity_scanner.py'
 
 concurrency:
   group: realtime-opportunity-scanner
@@ -36,6 +40,7 @@ jobs:
           unzip -oq trading-engine-s1-s5-diagnostic-v2.zip -d engine
           test -s engine/main.py
       - name: Run realtime market-session scanner
+        if: ${{ github.event_name != 'push' }}
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-3.8-flash
