@@ -1,0 +1,62 @@
+name: Realtime Opportunity Scanner
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1-5'
+    - cron: '0 6 * * 1-5'
+
+concurrency:
+  group: realtime-opportunity-scanner
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install requests pandas google-genai
+      - name: Validate scanner
+        run: python -m unittest -v test_realtime_opportunity_scanner.py
+      - name: Extract exact Trading Engine
+        run: |
+          test -s trading-engine-s1-s5-diagnostic-v2.zip
+          unzip -tq trading-engine-s1-s5-diagnostic-v2.zip
+          rm -rf engine
+          mkdir engine
+          unzip -oq trading-engine-s1-s5-diagnostic-v2.zip -d engine
+          test -s engine/main.py
+      - name: Run realtime market-session scanner
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-3.8-flash
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SCANNER_CANDIDATE_THRESHOLD: 55
+          SCANNER_COOLDOWN_SECONDS: 900
+        run: |
+          python - <<'PY'
+          import subprocess, time
+          from datetime import datetime, timezone
+          now=datetime.now(timezone.utc)
+          duration=150*60 if now.hour < 5 else 120*60
+          end=time.time()+duration
+          print(f"Realtime scanner session: {duration//60} minutes")
+          while time.time()<end:
+              started=time.time()
+              rc=subprocess.call(["python","realtime_opportunity_scanner.py"])
+              if rc==0:
+                  print("[ENGINE] Candidate detected -> exact S1-S5/Risk Engine gate")
+                  subprocess.call(["python","engine/main.py"])
+              sleep_for=max(5,60-int(time.time()-started))
+              time.sleep(sleep_for)
+          PY
