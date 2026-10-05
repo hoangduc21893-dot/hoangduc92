@@ -22,8 +22,8 @@ ENDPOINTS = {
         "https://api.dnse.com.vn/chart-api/v2/ohlcs/derivative",
     ],
     "VN30": [
-        "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
-        "https://api.dnse.com.vn/chart-api/v2/ohlcs/stock",
+        "https://services.entrade.com.vn/chart-api/v2/ohlcs/index",
+        "https://api.dnse.com.vn/chart-api/v2/ohlcs/index",
     ],
 }
 
@@ -152,9 +152,15 @@ def normalize_ohlc(payload):
     return None
 
 def summarize_payload(payload):
+    candidates=key_candidates(payload)
+    oi_keys=[k for k in candidates if "oi" in k.lower() or "openinterest" in k.lower() or "open_interest" in k.lower()]
+    basis_keys=[k for k in candidates if "basis" in k.lower()]
     return {
         "normalized": normalize_ohlc(payload),
-        "candidate_fields": key_candidates(payload),
+        "candidate_fields": candidates,
+        "oi_keys_found": oi_keys,
+        "oi_present": bool(oi_keys),
+        "basis_keys_found": basis_keys,
         "payload_type": type(payload).__name__,
         "top_level_keys": list(payload.keys())[:50] if isinstance(payload, dict) else None,
     }
