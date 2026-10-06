@@ -42,6 +42,8 @@ OI_MIN_CHANGE_PCT=0.0; BASIS_SOFT_LIMIT=12.0; MAX_CHASE_POINTS=2.5; KBS_PRICE_TO
 VN_TZ=ZoneInfo("Asia/Ho_Chi_Minh")
 STATE_PATH=Path("data/vn30f1m_watch_state.json")
 HISTORY_PATH=Path("data/vn30f1m_signal_history.jsonl")
+PAPER_LEDGER_PATH=Path("data/vn30f1m_paper_trades.jsonl")
+PAPER_VALIDATION_ENABLED=True
 HEADERS={"accept":"application/json, text/plain, */*","origin":"https://www.dnse.com.vn","referer":"https://www.dnse.com.vn/","user-agent":"Mozilla/5.0"}
 
 def in_session(now):
@@ -302,6 +304,82 @@ def history(x):
     HISTORY_PATH.parent.mkdir(parents=True,exist_ok=True)
     with HISTORY_PATH.open("a",encoding="utf-8") as f:f.write(json.dumps(x,ensure_ascii=False)+"\n")
 
+
+def _load_paper_trades():
+    if not PAPER_LEDGER_PATH.exists():
+        return []
+    rows=[]
+    for line in PAPER_LEDGER_PATH.read_text(encoding="utf-8").splitlines():
+        try:
+            x=json.loads(line)
+            if isinstance(x,dict): rows.append(x)
+        except json.JSONDecodeError:
+            continue
+    return rows
+
+def _save_paper_trades(rows):
+    PAPER_LEDGER_PATH.parent.mkdir(parents=True,exist_ok=True)
+    PAPER_LEDGER_PATH.write_text(
+        "\n".join(json.dumps(x,ensure_ascii=False) for x in rows)+
+        ("\n" if rows else ""), encoding="utf-8"
+    )
+
+def _paper_update(fut, now):
+    if not PAPER_VALIDATION_ENABLED:
+        return {"open":0,"closed":0}
+    rows=_load_paper_trades(); changed=False; closed_count=0
+    last=fut[-1]
+    for trade in rows:
+        if trade.get("status")!="OPEN":
+            continue
+        side=trade["side"]; sl=float(trade["sl"]); tp1=float(trade["tp1"]); tp2=float(trade["tp2"])
+        hit_sl = last["l"] <= sl if side=="LONG" else last["h"] >= sl
+        hit_tp2 = last["h"] >= tp2 if side=="LONG" else last["l"] <= tp2
+        hit_tp1 = last["h"] >= tp1 if side=="LONG" else last["l"] <= tp1
+        outcome=None; exit_price=None
+        if hit_sl:
+            outcome="SL"; exit_price=sl
+        elif hit_tp2:
+            outcome="TP2"; exit_price=tp2
+        elif hit_tp1:
+            outcome="TP1"; exit_price=tp1
+        if outcome:
+            entry=float(trade["entry"])
+            r=(exit_price-entry)/(entry-sl) if side=="LONG" else (entry-exit_price)/(sl-entry)
+            trade.update({"status":"CLOSED","exit_time":now.isoformat(),"exit_price":exit_price,
+                          "outcome":outcome,"r":round(r,4)})
+            closed_count += 1; changed=True
+        else:
+            trade["bars_held"]=int(trade.get("bars_held",0))+1; changed=True
+    if changed: _save_paper_trades(rows)
+    return {"open":sum(x.get("status")=="OPEN" for x in rows),"closed":closed_count}
+
+def _paper_open(sig, risk, now, score_value, regime, oi):
+    if not PAPER_VALIDATION_ENABLED or not risk:
+        return
+    rows=_load_paper_trades()
+    if any(x.get("status")=="OPEN" for x in rows):
+        return
+    rows.append({
+        "id":f"{now:%Y%m%d%H%M%S}-{sig['side']}",
+        "status":"OPEN","opened_at":now.isoformat(),"symbol":SYMBOL,
+        "strategy":sig["strategy"],"side":sig["side"],"regime":regime,
+        "entry":risk["entry"],"sl":risk["sl"],"tp1":risk["tp1"],"tp2":risk["tp2"],
+        "rr":risk["rr"],"risk_vnd":risk["risk_vnd"],"score":score_value,
+        "kbs_oi":oi["current"] if oi else None,"contract_code":oi["contract_code"] if oi else None
+    })
+    _save_paper_trades(rows)
+
+def _paper_stats():
+    rows=_load_paper_trades()
+    closed=[x for x in rows if x.get("status")=="CLOSED"]
+    wins=[x for x in closed if float(x.get("r",0))>0]
+    return {"total":len(rows),"open":sum(x.get("status")=="OPEN" for x in rows),
+            "closed":len(closed),"wins":len(wins),
+            "losses":sum(float(x.get("r",0))<0 for x in closed),
+            "win_rate_pct":(len(wins)/len(closed)*100) if closed else 0.0,
+            "avg_r":sum(float(x.get("r",0)) for x in closed)/len(closed) if closed else 0.0}
+
 def telegram(msg):
     r=requests.post(f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendMessage",json={"chat_id":os.environ["TELEGRAM_CHAT_ID"],"text":msg},timeout=15);r.raise_for_status()
 
@@ -366,10 +444,12 @@ def main():
     oi=oi_snapshot(kbs_oi,fut[-1]["c"])
     oi_status="AVAILABLE" if oi is not None else "INVALID"
     oi_source="KBS /derivative/iss"
+    paper_update=_paper_update(fut,now)
     diagnostics=_diagnose_setups(fut[:-1],reg,vw,vr)
     candidates=[f1(fut[:-1],reg,vw),f2(fut[:-1],vr,vw),f3(fut[:-1],reg),f4(fut[:-1],vw)]
     candidates=[x for x in candidates if x]
     if not candidates:
+        ps=_paper_stats(); print(f"Paper validation: open={ps['open']} closed={ps['closed']} win_rate={ps['win_rate_pct']:.1f}% avg_R={ps['avg_r']:.2f}")
         _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,[],[],diagnostics,"WAIT","no confirmed F1-F4 setup")
         history({"timestamp":now.isoformat(),"symbol":SYMBOL,"status":"WAIT","market_regime":reg,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"oi_source":oi_source,"reason":"no confirmed F1-F4 setup"});return 0
     priority={"F2 Breakout + Retest":4,"F1 Trend Following":3,"F4 VWAP Reclaim":2,"F4 VWAP Breakdown":2,"F3 Range Reversal":1}
@@ -405,8 +485,11 @@ def main():
                     f"Volume: {vr:.2f}x\nBasis: {bs['basis']:.2f}\nOI: {oi['current']:,.0f} (KBS, live)\nContract: {oi['contract_code']}\n"
                     f"VN30 5M: CONFIRMED\nTrigger: {sig['trigger']}\n\nPAPER TRADE / manual check only.\nSafety: FALSE POSITIVE = NGHIÊM CẤM.")
         telegram(msg);state.setdefault("alert_keys",{})[key]=now.isoformat();save_state(state)
+        _paper_open(sig,r,now,sc,reg,oi)
+        ps=_paper_stats(); print(f"Paper validation: open={ps['open']} closed={ps['closed']} win_rate={ps['win_rate_pct']:.1f}% avg_R={ps['avg_r']:.2f}")
         _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,diagnostics,"ALERTED",sig["trigger"])
         return 0
+    ps=_paper_stats(); print(f"Paper validation: open={ps['open']} closed={ps['closed']} win_rate={ps['win_rate_pct']:.1f}% avg_R={ps['avg_r']:.2f}")
     _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,diagnostics,"WAIT","all confirmed candidates blocked")
     return 0
 
