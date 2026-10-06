@@ -299,6 +299,7 @@ def main():
         message=(f"🟡 DS1 PRE-BREAKOUT — {signal['symbol']}\n\n"
                  f"Setup: {'+'.join(signal['strategies'])} (early entry; breakout NOT confirmed)\n"
                  f"Classification: {signal['classification']} — {signal['score']}/100\n"
+                 f"Score detail: near {signal['scores']['near_breakout']}/15, base {signal['scores']['base_quality']}/20, dry-up {signal['scores']['volume_dry_up']}/15, higher low {signal['scores']['higher_low']}/10, RS {signal['scores']['relative_strength']}/15, up/down volume {signal['scores']['volume_up_down']}/10, sector {signal['scores']['sector_strength']}/5, catalyst {signal['scores']['catalyst']}/5, regime {signal['scores']['market_regime']}/5\n"
                  f"Market regime: {regime}\nEntry: {signal['entry']:.2f}\nSL: {signal['sl']:.2f}\n"
                  f"Rolling resistance: {signal['resistance']:.2f} ({signal['gap_pct']:.1f}% away)\n"
                  f"Initial tranche: {starter_shares:,} shares ({fraction:.0%} of risk-sized position)\n"
