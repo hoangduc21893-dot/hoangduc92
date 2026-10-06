@@ -6,6 +6,7 @@ from datetime import datetime, time as dtime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 import requests
+from ds1_prebreakout import scan_prebreakout
 
 DS1 = ["PVT","PVS","MSB","HAH","BSR","VGC","DHC","VTP","VPB","MWG","HDB","PET","HPG"]
 NAV_VND=100_000_000
@@ -233,10 +234,12 @@ def main():
     vn30=bars(fetch("VN30","1D",120*24*60*60)); regime=market_regime(vn30)
     print(f"MARKET REGIME={regime}")
     state=load_state(); alerts=0
+    daily_cache={}
     for symbol in DS1:
         try:
             intraday=bars(fetch(symbol,"1",24*60*60)); daily=bars(fetch(symbol,"1D",120*24*60*60))
             if len(intraday)<10 or len(daily)<60: print(f"{symbol}: insufficient data"); continue
+            daily_cache[symbol]=daily
             vr=volume_ratio(intraday,daily,now); rs=relative_strength(daily,vn30)
             candidates=[
                 detect_s5(daily,intraday,vr),
@@ -266,6 +269,45 @@ def main():
             message=(f"🚨 DS1 CONFIRMED — {symbol}\n\nStrategy: {signal['strategy']}\nMarket Regime: {regime}\nScore: {score}/100\nEntry: {r['entry']:.2f}\nSL: {r['sl']:.2f}\nTP1: {r['tp1']:.2f}\nTP2: {r['tp2']:.2f}\nR:R: 1:{r['rr']:.2f}\nSize: {r['shares']:,} cp | Position: {r['position_value']:,.0f} VND\nRisk: {r['risk_vnd']:,.0f} VND\nVolume: {vr:.2f}x | RS20D: {rs*100:.1f}pp vs VN30\nTrigger: {signal['trigger']}\n\nAction: BUY only after final manual check.\nSafety: FALSE POSITIVE = NGHIÊM CẤM.")
             telegram(message); state.setdefault("alert_keys",{})[key]=now.isoformat(); save_state(state); alerts+=1
         except Exception as exc: print(f"{symbol}: ERROR {exc}")
+    catalyst_symbols={s.strip().upper() for s in os.getenv("DS1_CATALYST_SYMBOLS","").split(",") if s.strip()}
+    pre_signals=scan_prebreakout(daily_cache,vn30,regime,catalyst_symbols)
+    for signal in pre_signals:
+        if signal["score"]<60 and not signal.get("strategies"): continue
+        print(f"PRE-BREAKOUT {signal['symbol']}: {signal['classification']} {signal['score']}/100 | "
+              f"strategies={'+'.join(signal.get('strategies',[])) or 'none'} | blocked={signal['blocked']}")
+        record={"timestamp":now.isoformat(),"symbol":signal["symbol"],"strategy":"PRE-BREAKOUT",
+                "market_regime":regime,"score":signal["score"],"score_parts":signal["scores"],
+                "price":signal.get("price"),"entry":signal.get("entry"),"sl":signal.get("sl"),
+                "trigger":signal.get("trigger"),"status":"BLOCKED" if signal["blocked"] else "CANDIDATE",
+                "block_reasons":signal["blocked"]}
+        append_history(record)
+        if signal["blocked"]: continue
+        key=f"{now:%Y-%m-%d}|{signal['symbol']}|PRE-BREAKOUT"
+        if state.get("prebreakout_alert_keys",{}).get(key): continue
+        fraction=0.30 if signal["score"]>=80 else 0.20
+        risk_per_share=signal["entry"]-signal["sl"]
+        if risk_per_share<=0: continue
+        risk_shares=math.floor(RISK_PER_TRADE_VND/(risk_per_share*100))*100
+        max_shares=math.floor((NAV_VND*MAX_POSITION_PCT)/(signal["entry"]*100))*100
+        full_shares=max(0,min(risk_shares,max_shares))
+        starter_shares=math.floor(full_shares*fraction/100)*100
+        if starter_shares<100:
+            print(f"{signal['symbol']}: PRE-BREAKOUT blocked by minimum lot sizing")
+            continue
+        starter_value=signal["entry"]*starter_shares*100
+        starter_risk=risk_per_share*starter_shares*100
+        message=(f"🟡 DS1 PRE-BREAKOUT — {signal['symbol']}\n\n"
+                 f"Setup: {'+'.join(signal['strategies'])} (early entry; breakout NOT confirmed)\n"
+                 f"Classification: {signal['classification']} — {signal['score']}/100\n"
+                 f"Market regime: {regime}\nEntry: {signal['entry']:.2f}\nSL: {signal['sl']:.2f}\n"
+                 f"Rolling resistance: {signal['resistance']:.2f} ({signal['gap_pct']:.1f}% away)\n"
+                 f"Initial tranche: {starter_shares:,} shares ({fraction:.0%} of risk-sized position)\n"
+                 f"Position value: {starter_value:,.0f} VND | Risk: {starter_risk:,.0f} VND\n"
+                 f"Trigger: {signal['trigger']}\nInvalidation: {signal['invalidation']}\n"
+                 f"ADD the remainder only after existing S3/S5 breakout confirmation with volume; do not chase above pivot.")
+        telegram(message)
+        state.setdefault("prebreakout_alert_keys",{})[key]=now.isoformat()
+        save_state(state); alerts+=1
     print(f"DS1 scan complete. Alerts={alerts}/{len(DS1)}")
     return 0
 
