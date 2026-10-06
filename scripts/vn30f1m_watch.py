@@ -20,7 +20,10 @@ from zoneinfo import ZoneInfo
 import requests
 
 # KBS is the authoritative live OI source. DNSE derivative chart payload does not expose OI.
-from kbs_oi_adapter_v1 import get_snapshot as get_kbs_oi_snapshot
+try:
+    from scripts.kbs_oi_adapter_v1 import get_snapshot as get_kbs_oi_snapshot
+except ImportError:
+    from kbs_oi_adapter_v1 import get_snapshot as get_kbs_oi_snapshot
 
 SYMBOL="VN30F1M"; SPOT="VN30"
 ENDPOINTS = {
