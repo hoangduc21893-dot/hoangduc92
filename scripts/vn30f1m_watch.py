@@ -271,9 +271,8 @@ def main():
         if not vn_ok:blocked.append("VN30 5M confirmation failed")
         if bs is None:blocked.append("basis unavailable")
         elif abs(bs["basis"])>BASIS_SOFT_LIMIT:blocked.append(f"basis extreme={bs['basis']:.2f}")
-        if oi is None:blocked.append("OI unavailable from DNSE payload")
-        elif sig["side"]=="LONG" and oi["delta_pct"]<OI_MIN_CHANGE_PCT:blocked.append(f"OI not rising={oi['delta_pct']:.2f}%")
-        elif sig["side"]=="SHORT" and oi["delta_pct"]<OI_MIN_CHANGE_PCT:blocked.append(f"OI not rising for SHORT={oi['delta_pct']:.2f}%")
+        if oi is None:blocked.append("KBS OI unavailable/invalid")
+        elif not oi["price_valid"]:blocked.append(f"KBS/DNSE price mismatch={oi['price_gap']:.2f} pts")
         if sc<MIN_SCORE:blocked.append(f"score={sc}<75")
         if risk is None:blocked.append("risk_engine_failed_or_risk>400k")
         rec={"timestamp":now.isoformat(),"symbol":SYMBOL,"strategy":sig["strategy"],"side":sig["side"],"market_regime":reg,"score":sc,"score_parts":parts,
