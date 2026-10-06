@@ -434,6 +434,7 @@ def main():
             f"VN30 endpoint={v30_endpoint} bars={len(v30)}"
         )
     reg=market_regime(fut);vw=vwap(fut);vr=volume_ratio(fut);bs=basis_snapshot(fut[:-1],v30[:-1])
+    diagnostics=_diagnose_setups(fut[:-1],reg,vw,vr)
     try:
         kbs_oi=get_kbs_oi_snapshot()
     except Exception as e:
@@ -445,7 +446,6 @@ def main():
     oi_status="AVAILABLE" if oi is not None else "INVALID"
     oi_source="KBS /derivative/iss"
     paper_update=_paper_update(fut,now)
-    diagnostics=_diagnose_setups(fut[:-1],reg,vw,vr)
     candidates=[f1(fut[:-1],reg,vw),f2(fut[:-1],vr,vw),f3(fut[:-1],reg),f4(fut[:-1],vw)]
     candidates=[x for x in candidates if x]
     if not candidates:
