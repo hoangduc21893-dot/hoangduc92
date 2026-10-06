@@ -201,6 +201,74 @@ def f4(b,vw):
     if x[0]["c"]>=vw and x[-1]["c"]<vw and c<vw:return {"strategy":"F4 VWAP Breakdown","side":"SHORT","entry":c,"level":vw,"trigger":f"VWAP breakdown {vw:.2f} + hold"}
     return None
 
+def _diagnose_f1(b,reg,vw):
+    c=b[-1]["c"]; e=ema([z["c"] for z in b[:-1]],20)
+    if reg=="TREND_UP" and c>e and b[-2]["c"]<=e and c>=vw-.5:
+        return {"status":"PASS","reason":"TREND_UP + EMA20 reclaim + VWAP support"}
+    if reg=="TREND_DOWN" and c<e and b[-2]["c"]>=e and c<=vw+.5:
+        return {"status":"PASS","reason":"TREND_DOWN + EMA20 breakdown + VWAP resistance"}
+    if reg not in ("TREND_UP","TREND_DOWN"):
+        return {"status":"FAIL","reason":f"regime={reg}; F1 requires TREND_UP/TREND_DOWN"}
+    reasons=[]
+    if reg=="TREND_UP":
+        if not c>e: reasons.append("close not above EMA20")
+        if not b[-2]["c"]<=e: reasons.append("previous close not below/at EMA20")
+        if not c>=vw-.5: reasons.append("no VWAP support")
+    else:
+        if not c<e: reasons.append("close not below EMA20")
+        if not b[-2]["c"]>=e: reasons.append("previous close not above/at EMA20")
+        if not c<=vw+.5: reasons.append("no VWAP resistance")
+    return {"status":"FAIL","reason":"; ".join(reasons) or "EMA20/VWAP confirmation failed"}
+
+def _diagnose_f2(b,vr,vw):
+    c=b[-1]["c"]; p=b[-21:-1]
+    if len(p)<20:return {"status":"FAIL","reason":"insufficient 20-bar breakout window"}
+    if vr<MIN_VOL_RATIO:return {"status":"FAIL","reason":f"volume {vr:.2f}x < {MIN_VOL_RATIO:.2f}x"}
+    hi=max(z["h"] for z in p);lo=min(z["l"] for z in p);x=b[-4:]
+    if c>hi and any(z["l"]<=hi+0.5 for z in x[1:]) and c-hi<=MAX_CHASE_POINTS and c>=vw-1:
+        return {"status":"PASS","reason":f"LONG breakout/retest confirmed; volume {vr:.2f}x"}
+    if c<lo and any(z["h"]>=lo-0.5 for z in x[1:]) and lo-c<=MAX_CHASE_POINTS and c<=vw+1:
+        return {"status":"PASS","reason":f"SHORT breakdown/retest confirmed; volume {vr:.2f}x"}
+    reasons=[]
+    if not (c>hi or c<lo): reasons.append(f"no breakout beyond {lo:.2f}-{hi:.2f}")
+    if c>hi and c-hi>MAX_CHASE_POINTS: reasons.append(f"LONG chase {c-hi:.2f} pts > {MAX_CHASE_POINTS:.2f}")
+    if c<lo and lo-c>MAX_CHASE_POINTS: reasons.append(f"SHORT chase {lo-c:.2f} pts > {MAX_CHASE_POINTS:.2f}")
+    if c>hi and not any(z["l"]<=hi+0.5 for z in x[1:]): reasons.append("no LONG retest")
+    if c<lo and not any(z["h"]>=lo-0.5 for z in x[1:]): reasons.append("no SHORT retest")
+    if c>hi and not c>=vw-1: reasons.append("LONG below VWAP filter")
+    if c<lo and not c<=vw+1: reasons.append("SHORT above VWAP filter")
+    return {"status":"FAIL","reason":"; ".join(reasons) or "breakout/retest confirmation failed"}
+
+def _diagnose_f3(b,reg):
+    if reg!="RANGE":return {"status":"FAIL","reason":f"regime={reg}; F3 requires RANGE"}
+    x=b[-31:-1];hi=max(z["h"] for z in x);lo=min(z["l"] for z in x);c=b[-1]
+    if hi==lo:return {"status":"FAIL","reason":"range high equals range low"}
+    if c["c"]-lo<=(hi-lo)*.12 and bullish(c,b[-2]):
+        return {"status":"PASS","reason":f"LONG range-low rejection {lo:.2f} + bullish reversal"}
+    if hi-c["c"]<=(hi-lo)*.12 and bearish(c,b[-2]):
+        return {"status":"PASS","reason":f"SHORT range-high rejection {hi:.2f} + bearish reversal"}
+    reasons=[]
+    if c["c"]-lo>(hi-lo)*.12 and hi-c["c"]>(hi-lo)*.12: reasons.append("price not near range edge")
+    elif c["c"]-lo<=(hi-lo)*.12 and not bullish(c,b[-2]): reasons.append("LONG bullish reversal not confirmed")
+    elif hi-c["c"]<=(hi-lo)*.12 and not bearish(c,b[-2]): reasons.append("SHORT bearish reversal not confirmed")
+    return {"status":"FAIL","reason":"; ".join(reasons) or "range reversal confirmation failed"}
+
+def _diagnose_f4(b,vw):
+    x=b[-4:-1];c=b[-1]["c"]
+    if x[0]["c"]<=vw and x[-1]["c"]>vw and c>vw:
+        return {"status":"PASS","reason":f"LONG VWAP reclaim {vw:.2f} + hold"}
+    if x[0]["c"]>=vw and x[-1]["c"]<vw and c<vw:
+        return {"status":"PASS","reason":f"SHORT VWAP breakdown {vw:.2f} + hold"}
+    return {"status":"FAIL","reason":"no confirmed VWAP reclaim/breakdown + hold"}
+
+def _diagnose_setups(b,reg,vw,vr):
+    return {
+        "F1 Trend Following":_diagnose_f1(b,reg,vw),
+        "F2 Breakout + Retest":_diagnose_f2(b,vr,vw),
+        "F3 Range Reversal":_diagnose_f3(b,reg),
+        "F4 VWAP Reclaim/Breakdown":_diagnose_f4(b,vw),
+    }
+
 def risk_engine(sig,b):
     a=atr(b[:-1]);e=sig["entry"];side=sig["side"]
     if not a:return None
@@ -237,7 +305,7 @@ def history(x):
 def telegram(msg):
     r=requests.post(f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendMessage",json={"chat_id":os.environ["TELEGRAM_CHAT_ID"],"text":msg},timeout=15);r.raise_for_status()
 
-def _execution_summary(now, fut, v30, fut_endpoint, v30_endpoint, reg, vw, vr, bs, oi, oi_status, candidates, evaluations, final_status, final_reason):
+def _execution_summary(now, fut, v30, fut_endpoint, v30_endpoint, reg, vw, vr, bs, oi, oi_status, candidates, evaluations, diagnostics, final_status, final_reason):
     print("")
     print("=== VN30F1M FUTURES EXECUTION SUMMARY ===")
     print(f"Time: {now.strftime('%Y-%m-%d %H:%M:%S %Z')}")
@@ -257,19 +325,19 @@ def _execution_summary(now, fut, v30, fut_endpoint, v30_endpoint, reg, vw, vr, b
             f"Price: {oi['price']:.1f} | Gap: {oi['price_gap']:.2f} pts | "
             f"Price check: {'PASS' if oi['price_valid'] else 'FAIL'}"
         )
-    if not evaluations:
-        print("F1-F4: no confirmed setup")
-    else:
-        for item in evaluations:
-            status = "BLOCKED" if item["blocked"] else "READY"
-            print(
-                f"{item['strategy']} {item['side']}: {status} | "
-                f"Score={item['score']}/100 | "
-                f"VN30={'PASS' if item['vn_ok'] else 'FAIL'} | "
-                f"Risk={'PASS' if item['risk'] else 'FAIL'}"
-            )
-            if item["blocked"]:
-                print(f"  Blockers: {'; '.join(item['blocked'])}")
+    print("Strategy diagnostics:")
+    for name, item in diagnostics.items():
+        print(f"{name}: {item['status']} | {item['reason']}")
+    for item in evaluations:
+        status = "BLOCKED" if item["blocked"] else "READY"
+        print(
+            f"{item['strategy']} {item['side']}: {status} | "
+            f"Score={item['score']}/100 | "
+            f"VN30={'PASS' if item['vn_ok'] else 'FAIL'} | "
+            f"Risk={'PASS' if item['risk'] else 'FAIL'}"
+        )
+        if item["blocked"]:
+            print(f"  Blockers: {'; '.join(item['blocked'])}")
     print(f"Decision: {final_status}")
     if final_reason:
         print(f"Reason: {final_reason}")
@@ -291,17 +359,18 @@ def main():
     try:
         kbs_oi=get_kbs_oi_snapshot()
     except Exception as e:
-        _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,None,"UNAVAILABLE",[],[],"WAIT",f"KBS OI adapter failed: {type(e).__name__}: {e}")
+        _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,None,"UNAVAILABLE",[],[],diagnostics,"WAIT",f"KBS OI adapter failed: {type(e).__name__}: {e}")
         history({"timestamp":now.isoformat(),"symbol":SYMBOL,"status":"WAIT","market_regime":reg,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,
                  "oi_status":"UNAVAILABLE","oi_source":"KBS","reason":f"KBS OI adapter failed: {type(e).__name__}: {e}"})
         return 0
     oi=oi_snapshot(kbs_oi,fut[-1]["c"])
     oi_status="AVAILABLE" if oi is not None else "INVALID"
     oi_source="KBS /derivative/iss"
+    diagnostics=_diagnose_setups(fut[:-1],reg,vw,vr)
     candidates=[f1(fut[:-1],reg,vw),f2(fut[:-1],vr,vw),f3(fut[:-1],reg),f4(fut[:-1],vw)]
     candidates=[x for x in candidates if x]
     if not candidates:
-        _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,[],[],"WAIT","no confirmed F1-F4 setup")
+        _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,[],[],diagnostics,"WAIT","no confirmed F1-F4 setup")
         history({"timestamp":now.isoformat(),"symbol":SYMBOL,"status":"WAIT","market_regime":reg,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"oi_source":oi_source,"reason":"no confirmed F1-F4 setup"});return 0
     priority={"F2 Breakout + Retest":4,"F1 Trend Following":3,"F4 VWAP Reclaim":2,"F4 VWAP Breakdown":2,"F3 Range Reversal":1}
     candidates.sort(key=lambda x:priority[x["strategy"]],reverse=True)
@@ -328,7 +397,7 @@ def main():
         if blocked:continue
         state=load_state();key=f"{now:%Y-%m-%d}|{sig['strategy']}|{sig['side']}"
         if state.get("alert_keys",{}).get(key):
-            _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,"WAIT","duplicate alert suppressed")
+            _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,diagnostics,"WAIT","duplicate alert suppressed")
             return 0
         r=risk;msg=(f"🚨 VN30F1M {sig['side']}\n\nStrategy: {sig['strategy']}\nRegime: {reg}\nScore: {sc}/100\n"
                     f"Entry: {r['entry']:.1f}\nSL: {r['sl']:.1f}\nTP1: {r['tp1']:.1f}\nTP2: {r['tp2']:.1f}\n"
@@ -336,9 +405,9 @@ def main():
                     f"Volume: {vr:.2f}x\nBasis: {bs['basis']:.2f}\nOI: {oi['current']:,.0f} (KBS, live)\nContract: {oi['contract_code']}\n"
                     f"VN30 5M: CONFIRMED\nTrigger: {sig['trigger']}\n\nPAPER TRADE / manual check only.\nSafety: FALSE POSITIVE = NGHIÊM CẤM.")
         telegram(msg);state.setdefault("alert_keys",{})[key]=now.isoformat();save_state(state)
-        _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,"ALERTED",sig["trigger"])
+        _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,diagnostics,"ALERTED",sig["trigger"])
         return 0
-    _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,"WAIT","all confirmed candidates blocked")
+    _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,diagnostics,"WAIT","all confirmed candidates blocked")
     return 0
 
 if __name__=="__main__":raise SystemExit(main())
