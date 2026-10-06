@@ -1,6 +1,12 @@
 name: VN30F1M Futures Watch
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/vn30f1m_watch.py'
+      - 'test_hardening_v1.py'
+      - '.github/workflows/vn30f1m_watch.yml'
   push:
     branches: [main]
     paths:
