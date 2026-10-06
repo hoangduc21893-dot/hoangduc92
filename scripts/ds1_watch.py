@@ -294,8 +294,8 @@ def main():
         if starter_shares<100:
             print(f"{signal['symbol']}: PRE-BREAKOUT blocked by minimum lot sizing")
             continue
-        starter_value=signal["entry"]*starter_shares*100
-        starter_risk=risk_per_share*starter_shares*100
+        starter_value=signal["entry"]*starter_shares
+        starter_risk=risk_per_share*starter_shares
         message=(f"🟡 DS1 PRE-BREAKOUT — {signal['symbol']}\n\n"
                  f"Setup: {'+'.join(signal['strategies'])} (early entry; breakout NOT confirmed)\n"
                  f"Classification: {signal['classification']} — {signal['score']}/100\n"
