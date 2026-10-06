@@ -42,6 +42,9 @@ jobs:
         run: python -m pip install requests
       - name: Validate KBS OI integration
         run: python -m unittest -v test_kbs_oi_adapter_v1.py test_vn30f1m_oi_integration.py
+      - name: Hardening v1 regression tests
+        run: python -m unittest -v test_hardening_v1.py
+
       - name: Live KBS OI snapshot
         run: python scripts/kbs_oi_adapter_v1.py
       - name: Run VN30F1M Futures Engine
