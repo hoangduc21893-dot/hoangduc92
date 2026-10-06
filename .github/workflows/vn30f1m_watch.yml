@@ -1,6 +1,14 @@
 name: VN30F1M Futures Watch
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/vn30f1m_watch.py'
+      - 'scripts/kbs_oi_adapter_v1.py'
+      - 'test_vn30f1m_oi_integration.py'
+      - 'test_kbs_oi_adapter_v1.py'
+      - '.github/workflows/vn30f1m_watch.yml'
   schedule:
     - cron: '*/5 * * * 1-5'
   workflow_dispatch:
@@ -21,7 +29,10 @@ jobs:
           python-version: '3.11'
       - name: Install dependencies
         run: python -m pip install requests
+      - name: Validate KBS OI integration
+        run: python -m unittest -v test_kbs_oi_adapter_v1.py test_vn30f1m_oi_integration.py
       - name: Run VN30F1M Futures Engine
+        if: ${{ github.event_name != 'push' }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
