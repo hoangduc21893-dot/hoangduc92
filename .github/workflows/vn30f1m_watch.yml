@@ -32,7 +32,6 @@ jobs:
       - name: Validate KBS OI integration
         run: python -m unittest -v test_kbs_oi_adapter_v1.py test_vn30f1m_oi_integration.py
       - name: Live KBS OI snapshot
-        if: ${{ github.event_name == 'push' }}
         run: python scripts/kbs_oi_adapter_v1.py
       - name: Run VN30F1M Futures Engine
         if: ${{ github.event_name != 'push' }}
