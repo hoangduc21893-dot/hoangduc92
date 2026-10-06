@@ -51,12 +51,20 @@ def _request(method,url,**kwargs):
     except Exception as e: raise RuntimeError(f"KBS non-JSON response HTTP {r.status_code}: {e}") from e
     return r.status_code,payload
 
+def krx_candidate(alias: str) -> str | None:
+    """Public compatibility wrapper used by tests and callers."""
+    return krx_code_from_alias(alias)
+
 def resolve_contract() -> dict:
     alias=f1m_alias()
     candidate=krx_code_from_alias(alias)
     status,payload=_request("GET",DERIVATIVE_GROUP)
     items=payload.get("data",[]) if isinstance(payload,dict) else payload if isinstance(payload,list) else []
     candidates=[x for x in items if isinstance(x,str) and ("I1" in x or x.startswith("VN30F"))]
+    if status not in (200,201):
+        raise RuntimeError(f"KBS derivative group HTTP {status}")
+    if not candidate or candidate not in candidates:
+        raise RuntimeError(f"Contract mapping not verified: alias={alias} candidate={candidate} group_candidates={candidates[:20]}")
     return {"symbol_alias":alias,"krx_candidate":candidate,"group_status":status,"group_candidates":candidates[:100]}
 
 def _rows(payload):
@@ -140,6 +148,10 @@ def fetch_snapshot() -> dict:
         except Exception as e:
             attempts.append({"code":code,"error":f"{type(e).__name__}: {e}"})
     raise RuntimeError(f"KBS OI unavailable; attempts={attempts}")
+
+def get_snapshot() -> dict:
+    """Public adapter entrypoint."""
+    return fetch_snapshot()
 
 if __name__=="__main__":
     print(json.dumps(fetch_snapshot(),ensure_ascii=False,indent=2))
