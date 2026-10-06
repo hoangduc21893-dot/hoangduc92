@@ -47,5 +47,6 @@ jobs:
           path: |
             data/vn30f1m_signal_history.jsonl
             data/kbs_oi_snapshot.json
+            data/vn30f1m_paper_trades.jsonl
           if-no-files-found: ignore
           retention-days: 90
