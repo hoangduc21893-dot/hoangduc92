@@ -19,6 +19,9 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 import requests
 
+# KBS is the authoritative live OI source. DNSE derivative chart payload does not expose OI.
+from kbs_oi_adapter_v1 import get_snapshot as get_kbs_oi_snapshot
+
 SYMBOL="VN30F1M"; SPOT="VN30"
 ENDPOINTS = {
     "VN30F1M": [
@@ -32,7 +35,7 @@ ENDPOINTS = {
 }
 RISK_PER_TRADE_VND=400_000; POINT_VALUE_VND=100_000; MAX_CONTRACTS=1
 MIN_SCORE=75; MIN_RR=2.0; MIN_VOL_RATIO=1.30
-OI_MIN_CHANGE_PCT=0.0; BASIS_SOFT_LIMIT=12.0; MAX_CHASE_POINTS=2.5
+OI_MIN_CHANGE_PCT=0.0; BASIS_SOFT_LIMIT=12.0; MAX_CHASE_POINTS=2.5; KBS_PRICE_TOLERANCE=5.0
 VN_TZ=ZoneInfo("Asia/Ho_Chi_Minh")
 STATE_PATH=Path("data/vn30f1m_watch_state.json")
 HISTORY_PATH=Path("data/vn30f1m_signal_history.jsonl")
@@ -120,13 +123,44 @@ def vn30_confirmation(v,side):
     e10,e30=ema(c,10),ema(c,30)
     return (side=="LONG" and c[-1]>e10>e30) or (side=="SHORT" and c[-1]<e10<e30)
 
-def oi_snapshot(b):
-    x=[z for z in b[:-1] if "oi" in z]
-    if len(x)<2:return None
-    cur=x[-1]["oi"]; prev=x[-2]["oi"]
-    avg=sum(z["oi"] for z in x[-21:-1])/min(20,len(x)-1) if len(x)>2 else prev
-    return {"current":cur,"previous":prev,"delta":cur-prev,"delta_pct":((cur/prev)-1)*100 if prev else 0.0,
-            "vs_avg_pct":((cur/avg)-1)*100 if avg else 0.0}
+def oi_snapshot(kbs_snapshot, futures_price):
+    """Normalize the live KBS OI snapshot for the futures engine.
+
+    KBS /derivative/iss provides current OI, but not an intraday OI time series.
+    Therefore v1 uses OI availability + contract/price validation as the hard
+    data-quality gate. Directional OI delta is deliberately left unavailable
+    until a persistent intraday OI history source is added.
+    """
+    if not isinstance(kbs_snapshot, dict):
+        return None
+    oi=kbs_snapshot.get("open_interest")
+    price=kbs_snapshot.get("price")
+    try:
+        oi=float(oi)
+        price=float(price)
+    except (TypeError,ValueError):
+        return None
+    if oi<=0 or price<=0:
+        return None
+    if kbs_snapshot.get("source")!="KBS" or kbs_snapshot.get("underlying")!="VN30":
+        return None
+    price_gap=abs(float(futures_price)-price)
+    return {
+        "current":oi,
+        "previous":None,
+        "delta":None,
+        "delta_pct":None,
+        "vs_avg_pct":None,
+        "source":"KBS",
+        "contract_code":kbs_snapshot.get("contract_code"),
+        "contract_name":kbs_snapshot.get("contract_name"),
+        "timestamp":kbs_snapshot.get("timestamp"),
+        "expiry":kbs_snapshot.get("expiry"),
+        "market_status":kbs_snapshot.get("market_status"),
+        "price":price,
+        "price_gap":price_gap,
+        "price_valid":price_gap<=KBS_PRICE_TOLERANCE,
+    }
 
 def basis_snapshot(fut,spot):
     if not fut or not spot:return None
@@ -211,9 +245,16 @@ def main():
             f"Insufficient DNSE data | VN30F1M endpoint={fut_endpoint} bars={len(fut)} | "
             f"VN30 endpoint={v30_endpoint} bars={len(v30)}"
         )
-    reg=market_regime(fut);vw=vwap(fut);vr=volume_ratio(fut);bs=basis_snapshot(fut[:-1],v30[:-1]);oi=oi_snapshot(fut)
-    oi_status="AVAILABLE" if oi is not None else "UNAVAILABLE"
-    oi_source="DNSE chart-api v2 derivative payload"
+    reg=market_regime(fut);vw=vwap(fut);vr=volume_ratio(fut);bs=basis_snapshot(fut[:-1],v30[:-1])
+    try:
+        kbs_oi=get_kbs_oi_snapshot()
+    except Exception as e:
+        history({"timestamp":now.isoformat(),"symbol":SYMBOL,"status":"WAIT","market_regime":reg,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,
+                 "oi_status":"UNAVAILABLE","oi_source":"KBS","reason":f"KBS OI adapter failed: {type(e).__name__}: {e}"})
+        return 0
+    oi=oi_snapshot(kbs_oi,fut[-1]["c"])
+    oi_status="AVAILABLE" if oi is not None else "INVALID"
+    oi_source="KBS /derivative/iss"
     candidates=[f1(fut[:-1],reg,vw),f2(fut[:-1],vr,vw),f3(fut[:-1],reg),f4(fut[:-1],vw)]
     candidates=[x for x in candidates if x]
     if not candidates:
@@ -236,7 +277,7 @@ def main():
         if sc<MIN_SCORE:blocked.append(f"score={sc}<75")
         if risk is None:blocked.append("risk_engine_failed_or_risk>400k")
         rec={"timestamp":now.isoformat(),"symbol":SYMBOL,"strategy":sig["strategy"],"side":sig["side"],"market_regime":reg,"score":sc,"score_parts":parts,
-             "entry":sig["entry"],"trigger":sig["trigger"],"volume_ratio":vr,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"oi_source":oi_source,"vn30_confirmation":vn_ok,"risk":risk,
+             "entry":sig["entry"],"trigger":sig["trigger"],"volume_ratio":vr,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"oi_source":oi_source,"kbs_oi_snapshot":kbs_oi,"vn30_confirmation":vn_ok,"risk":risk,
              "status":"BLOCKED" if blocked else "ALERTED","block_reasons":blocked}
         history(rec)
         if blocked:continue
@@ -245,7 +286,7 @@ def main():
         r=risk;msg=(f"🚨 VN30F1M {sig['side']}\n\nStrategy: {sig['strategy']}\nRegime: {reg}\nScore: {sc}/100\n"
                     f"Entry: {r['entry']:.1f}\nSL: {r['sl']:.1f}\nTP1: {r['tp1']:.1f}\nTP2: {r['tp2']:.1f}\n"
                     f"R:R: 1:{r['rr']:.1f}\nSize: 1 HĐ\nRisk: {r['risk_vnd']:,.0f} VND\n"
-                    f"Volume: {vr:.2f}x\nBasis: {bs['basis']:.2f}\nOI: {oi['current']:,.0f} ({oi['delta_pct']:+.2f}% vs prior)\n"
+                    f"Volume: {vr:.2f}x\nBasis: {bs['basis']:.2f}\nOI: {oi['current']:,.0f} (KBS, live)\nContract: {oi['contract_code']}\n"
                     f"VN30 5M: CONFIRMED\nTrigger: {sig['trigger']}\n\nPAPER TRADE / manual check only.\nSafety: FALSE POSITIVE = NGHIÊM CẤM.")
         telegram(msg);state.setdefault("alert_keys",{})[key]=now.isoformat();save_state(state);return 0
     return 0
