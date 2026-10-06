@@ -1,6 +1,12 @@
 name: VN30F1M Futures Watch
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/vn30f1m_watch.py'
+      - 'test_hardening_v1.py'
+      - '.github/workflows/vn30f1m_watch.yml'
   push:
     branches: [main]
     paths:
@@ -23,6 +29,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Restore VN30F persistent state
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/vn30f1m_watch_state.json
+            data/vn30f1m_paper_trades.jsonl
+            data/vn30f1m_signal_history.jsonl
+          key: vn30f1m-state-${{ github.run_id }}
+          restore-keys: |
+            vn30f1m-state-
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -31,6 +48,9 @@ jobs:
         run: python -m pip install requests
       - name: Validate KBS OI integration
         run: python -m unittest -v test_kbs_oi_adapter_v1.py test_vn30f1m_oi_integration.py
+      - name: Hardening v1 regression tests
+        run: python -m unittest -v test_hardening_v1.py
+
       - name: Live KBS OI snapshot
         run: python scripts/kbs_oi_adapter_v1.py
       - name: Run VN30F1M Futures Engine
@@ -46,6 +66,7 @@ jobs:
           name: vn30f1m-signal-history-${{ github.run_id }}
           path: |
             data/vn30f1m_signal_history.jsonl
+            data/vn30f1m_watch_state.json
             data/kbs_oi_snapshot.json
             data/vn30f1m_paper_trades.jsonl
           if-no-files-found: ignore
