@@ -23,6 +23,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Restore VN30F persistent state
+        uses: actions/cache@v4
+        with:
+          path: |
+            data/vn30f1m_watch_state.json
+            data/vn30f1m_paper_trades.jsonl
+            data/vn30f1m_signal_history.jsonl
+          key: vn30f1m-state-${{ github.run_id }}
+          restore-keys: |
+            vn30f1m-state-
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -46,6 +57,7 @@ jobs:
           name: vn30f1m-signal-history-${{ github.run_id }}
           path: |
             data/vn30f1m_signal_history.jsonl
+            data/vn30f1m_watch_state.json
             data/kbs_oi_snapshot.json
             data/vn30f1m_paper_trades.jsonl
           if-no-files-found: ignore
