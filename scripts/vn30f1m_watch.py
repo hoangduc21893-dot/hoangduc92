@@ -237,6 +237,45 @@ def history(x):
 def telegram(msg):
     r=requests.post(f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendMessage",json={"chat_id":os.environ["TELEGRAM_CHAT_ID"],"text":msg},timeout=15);r.raise_for_status()
 
+def _execution_summary(now, fut, v30, fut_endpoint, v30_endpoint, reg, vw, vr, bs, oi, oi_status, candidates, evaluations, final_status, final_reason):
+    print("")
+    print("=== VN30F1M FUTURES EXECUTION SUMMARY ===")
+    print(f"Time: {now.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+    print(f"Futures: {'OK' if fut else 'FAIL'} | endpoint={fut_endpoint} | bars={len(fut)}")
+    print(f"VN30: {'OK' if v30 else 'FAIL'} | endpoint={v30_endpoint} | bars={len(v30)}")
+    print(f"Price: {fut[-1]['c']:.1f} | VN30: {v30[-1]['c']:.2f}")
+    print(f"Regime: {reg} | VWAP: {vw:.2f} | Volume: {vr:.2f}x")
+    if bs is None:
+        print("Basis: UNAVAILABLE")
+    else:
+        print(f"Basis: {bs['basis']:.2f}")
+    if oi is None:
+        print(f"KBS OI: {oi_status}")
+    else:
+        print(
+            f"KBS OI: {oi['current']:,.0f} | Contract: {oi['contract_code']} | "
+            f"Price: {oi['price']:.1f} | Gap: {oi['price_gap']:.2f} pts | "
+            f"Price check: {'PASS' if oi['price_valid'] else 'FAIL'}"
+        )
+    if not evaluations:
+        print("F1-F4: no confirmed setup")
+    else:
+        for item in evaluations:
+            status = "BLOCKED" if item["blocked"] else "READY"
+            print(
+                f"{item['strategy']} {item['side']}: {status} | "
+                f"Score={item['score']}/100 | "
+                f"VN30={'PASS' if item['vn_ok'] else 'FAIL'} | "
+                f"Risk={'PASS' if item['risk'] else 'FAIL'}"
+            )
+            if item["blocked"]:
+                print(f"  Blockers: {'; '.join(item['blocked'])}")
+    print(f"Decision: {final_status}")
+    if final_reason:
+        print(f"Reason: {final_reason}")
+    print("=========================================")
+    print("")
+
 def main():
     now=datetime.now(VN_TZ)
     if now.weekday()>=5 or not in_session(now):return 0
@@ -252,6 +291,7 @@ def main():
     try:
         kbs_oi=get_kbs_oi_snapshot()
     except Exception as e:
+        _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,None,"UNAVAILABLE",[],[],"WAIT",f"KBS OI adapter failed: {type(e).__name__}: {e}")
         history({"timestamp":now.isoformat(),"symbol":SYMBOL,"status":"WAIT","market_regime":reg,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,
                  "oi_status":"UNAVAILABLE","oi_source":"KBS","reason":f"KBS OI adapter failed: {type(e).__name__}: {e}"})
         return 0
@@ -261,9 +301,11 @@ def main():
     candidates=[f1(fut[:-1],reg,vw),f2(fut[:-1],vr,vw),f3(fut[:-1],reg),f4(fut[:-1],vw)]
     candidates=[x for x in candidates if x]
     if not candidates:
+        _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,[],[],"WAIT","no confirmed F1-F4 setup")
         history({"timestamp":now.isoformat(),"symbol":SYMBOL,"status":"WAIT","market_regime":reg,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"oi_source":oi_source,"reason":"no confirmed F1-F4 setup"});return 0
     priority={"F2 Breakout + Retest":4,"F1 Trend Following":3,"F4 VWAP Reclaim":2,"F4 VWAP Breakdown":2,"F3 Range Reversal":1}
     candidates.sort(key=lambda x:priority[x["strategy"]],reverse=True)
+    evaluations=[]
     for sig in candidates:
         vn_ok=vn30_confirmation(v30,sig["side"]);risk=risk_engine(sig,fut[:-1]);sc,parts=score(sig,fut,vr,vn_ok,bs,oi,risk)
         blocked=[]
@@ -278,19 +320,25 @@ def main():
         elif not oi["price_valid"]:blocked.append(f"KBS/DNSE price mismatch={oi['price_gap']:.2f} pts")
         if sc<MIN_SCORE:blocked.append(f"score={sc}<75")
         if risk is None:blocked.append("risk_engine_failed_or_risk>400k")
+        evaluations.append({"strategy":sig["strategy"],"side":sig["side"],"score":sc,"vn_ok":vn_ok,"risk":risk,"blocked":blocked})
         rec={"timestamp":now.isoformat(),"symbol":SYMBOL,"strategy":sig["strategy"],"side":sig["side"],"market_regime":reg,"score":sc,"score_parts":parts,
              "entry":sig["entry"],"trigger":sig["trigger"],"volume_ratio":vr,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"oi_source":oi_source,"kbs_oi_snapshot":kbs_oi,"vn30_confirmation":vn_ok,"risk":risk,
              "status":"BLOCKED" if blocked else "ALERTED","block_reasons":blocked}
         history(rec)
         if blocked:continue
         state=load_state();key=f"{now:%Y-%m-%d}|{sig['strategy']}|{sig['side']}"
-        if state.get("alert_keys",{}).get(key):return 0
+        if state.get("alert_keys",{}).get(key):
+            _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,"WAIT","duplicate alert suppressed")
+            return 0
         r=risk;msg=(f"🚨 VN30F1M {sig['side']}\n\nStrategy: {sig['strategy']}\nRegime: {reg}\nScore: {sc}/100\n"
                     f"Entry: {r['entry']:.1f}\nSL: {r['sl']:.1f}\nTP1: {r['tp1']:.1f}\nTP2: {r['tp2']:.1f}\n"
                     f"R:R: 1:{r['rr']:.1f}\nSize: 1 HĐ\nRisk: {r['risk_vnd']:,.0f} VND\n"
                     f"Volume: {vr:.2f}x\nBasis: {bs['basis']:.2f}\nOI: {oi['current']:,.0f} (KBS, live)\nContract: {oi['contract_code']}\n"
                     f"VN30 5M: CONFIRMED\nTrigger: {sig['trigger']}\n\nPAPER TRADE / manual check only.\nSafety: FALSE POSITIVE = NGHIÊM CẤM.")
-        telegram(msg);state.setdefault("alert_keys",{})[key]=now.isoformat();save_state(state);return 0
+        telegram(msg);state.setdefault("alert_keys",{})[key]=now.isoformat();save_state(state)
+        _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,"ALERTED",sig["trigger"])
+        return 0
+    _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,"WAIT","all confirmed candidates blocked")
     return 0
 
 if __name__=="__main__":raise SystemExit(main())
