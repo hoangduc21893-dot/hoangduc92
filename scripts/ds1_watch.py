@@ -7,7 +7,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 import requests
 
-DS1 = ["PVT","PVS","MSB","HAH","BSR","VGC","DHC","VTP","VPB","MWG","HDB","PET","HPG","DCM","GMD"]
+DS1 = ["PVT","PVS","MSB","HAH","BSR","VGC","DHC","VPB","MWG","HDB","PET","HPG","DCM","GMD"]
 NAV_VND=100_000_000
 RISK_PER_TRADE_VND=400_000
 MAX_POSITION_PCT=0.20
