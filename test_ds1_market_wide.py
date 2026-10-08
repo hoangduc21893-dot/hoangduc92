@@ -133,6 +133,26 @@ class Tests(unittest.TestCase):
         self.assertFalse(ledger.reserve("key"))
         self.assertEqual(session.put.call_args.kwargs["json"]["branch"],"ds1-v2-alert-state")
 
+    def test_watch_message_freshness_and_no_buy_and_dedupe(self):
+        item = {"status": "NO_SETUP", "pre_breakout": {"status": "WATCH", "score": 80,
+                "pivot_vnd": 26000, "distance_to_pivot_pct": 2.0},
+                "last_closed_1m_bar": {"bar_time": (NOW-timedelta(minutes=2)).isoformat()}}
+        with tempfile.TemporaryDirectory() as folder, patch.dict(scanner.os.environ,
+                {"TELEGRAM_BOT_TOKEN": "fake", "TELEGRAM_CHAT_ID": "test"}):
+            ledger = scanner.Ledger(Path(folder)/"watch.sqlite")
+            session = Mock()
+            session.post.return_value.json.return_value = {"ok": True, "result": {"message_id": 44}}
+            self.assertEqual(scanner.send_watch("AAA", item, NOW, ledger, session), "WATCH_SENT")
+            msg = session.post.call_args.kwargs["json"]["text"]
+            self.assertIn("NOT A BUY SIGNAL", msg)
+            self.assertNotIn("Entry 26000", msg)
+            self.assertEqual(scanner.send_watch("AAA", item, NOW, ledger, session), "DUPLICATE_SUPPRESSED")
+            stale = {**item, "last_closed_1m_bar": {"bar_time": (NOW-timedelta(minutes=10)).isoformat()}}
+            self.assertEqual(scanner.send_watch("BBB", stale, NOW, ledger, session), "NOT_ELIGIBLE")
+            blocked = {**item, "status": "BLOCKED"}
+            self.assertEqual(scanner.send_watch("CCC", blocked, NOW, ledger, session), "NOT_ELIGIBLE")
+            ledger.close()
+
     def test_rate_limit_retry_and_nonretryable_http_failure(self):
         session=Mock()
         ok=Mock(status_code=200)
