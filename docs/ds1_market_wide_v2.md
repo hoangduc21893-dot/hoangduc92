@@ -127,3 +127,7 @@ state branch and do not delete/rewrite it. No state-branch write occurs in paper
 7. Only then add a separately reviewed schedule/live workflow. Do not call this
    release production-ready based on offline CI alone.
 
+
+## Pre-breakout priority (paper-only)
+
+Before intraday scanning, completed daily bars now produce a transparent 0–100 **WATCH priority** from MA20>MA50 and close>=MA20 (30), price within 5% below 20-session resistance (30), contraction of 10-day ranges (20), and contraction of 10-day volume (20). Candidates are processed in priority order. `pre_breakout_watchlist` in the snapshot contains at most 50 WATCH candidates for review. This prioritization does not bypass S1–S5, change the risk/score gate, or emit BUY. It does not claim calibrated predictive performance and does not solve total-universe runtime; same request count is required for a full scan. No live schedule or Telegram permissions are enabled.
