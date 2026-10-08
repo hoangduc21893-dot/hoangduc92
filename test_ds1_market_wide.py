@@ -55,6 +55,24 @@ class Tests(unittest.TestCase):
             with self.subTest(change=change), self.assertRaises(ValueError):
                 scanner.validate_bars({**payload, **change})
 
+    def test_pre_breakout_rank_is_watch_not_buy(self):
+        bars = daily()
+        for i, bar in enumerate(bars):
+            if i >= 50:
+                bar["h"] = 26000.
+                bar["l"] = 25000.
+                bar["c"] = 25500.
+                bar["o"] = 25400.
+                bar["v"] = 100000. if i < 60 else 60000.
+        ranked = scanner.pre_breakout_rank(bars)
+        self.assertIn(ranked["status"], ("WATCH", "NOT_READY"))
+        self.assertNotIn("BUY", ranked["status"])
+        self.assertLessEqual(ranked["score"], 100)
+
+    def test_pre_breakout_insufficient_history(self):
+        result = scanner.pre_breakout_rank(daily()[:10])
+        self.assertEqual(result["status"], "INSUFFICIENT_DATA")
+
     def test_prices_converted_to_vnd(self):
         client=scanner.Client()
         client.get=Mock(return_value=dict(t=[1],o=[25],h=[26],l=[24],c=[25.55],v=[100]))
