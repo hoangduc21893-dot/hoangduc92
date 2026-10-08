@@ -41,5 +41,21 @@ class SnapshotTests(unittest.TestCase):
             self.assertFalse(path.with_suffix(".json.tmp").exists())
 
 
+    def test_vn30_uses_index_endpoint_and_stock_uses_stock_endpoint(self):
+        class FakeResponse:
+            def raise_for_status(self):
+                return None
+            def json(self):
+                return {"t": [], "o": [], "h": [], "l": [], "c": [], "v": []}
+
+        with patch.object(scanner.requests, "get", return_value=FakeResponse()) as get:
+            scanner.fetch("VN30", "1D", 86400)
+            self.assertEqual(get.call_args.args[0], scanner.INDEX_URL)
+            self.assertEqual(get.call_args.kwargs["params"]["symbol"], "VN30")
+            scanner.fetch("PVT", "1", 86400)
+            self.assertEqual(get.call_args.args[0], scanner.BASE_URL)
+            self.assertEqual(get.call_args.kwargs["params"]["symbol"], "PVT")
+
+
 if __name__ == "__main__":
     unittest.main()
