@@ -39,11 +39,13 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/ds1_watch.py
 
-      - name: Save DS1 signal history
+      - name: Save DS1 signal history and latest snapshot
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ds1-signal-history-${{ github.run_id }}
-          path: data/signal_history.jsonl
+          path: |
+            data/signal_history.jsonl
+            data/ds1_latest_snapshot.json
           if-no-files-found: ignore
           retention-days: 90
