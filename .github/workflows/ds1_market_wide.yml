@@ -9,6 +9,11 @@ on:
       - 'test_ds1_market_wide.py'
       - '.github/workflows/ds1_market_wide.yml'
   workflow_dispatch:
+  # GitHub cron uses UTC; 02:20/06:10 UTC = 09:20/13:10 ICT.
+  # Scheduled workflows execute only from the repository default branch.
+  schedule:
+    - cron: '20 2 * * 1-5'
+    - cron: '10 6 * * 1-5'
 
 permissions:
   contents: read
@@ -31,13 +36,17 @@ jobs:
       - name: Offline regression tests
         run: python -m unittest -v test_ds1_market_wide test_ds1_snapshot
       - name: Restore daily data cache
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         uses: actions/cache@v4
         with:
           path: data/ds1_v2/daily_cache.json
           key: ds1-v2-daily-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: ds1-v2-daily-
       - name: Market-wide paper scan (no Telegram)
+        env:
+          DS1_V2_VALIDATED: 'false'
+          TELEGRAM_BOT_TOKEN: ''
+          TELEGRAM_CHAT_ID: ''
         if: github.event_name == 'workflow_dispatch'
         run: python -m scripts.ds1_market_wide --mode paper
       - name: Upload diagnostics
