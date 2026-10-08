@@ -191,6 +191,38 @@ def daily_screen(daily):
     return len(daily) >= 60 and sum(b["v"] for b in daily[-20:]) > 0
 
 
+
+def pre_breakout_rank(daily):
+    """Daily-only WATCH priority, not a BUY signal or a new S1-S5 gate."""
+    if len(daily) < 60:
+        return {"score": 0, "status": "INSUFFICIENT_DATA"}
+    closes = [b["c"] for b in daily]
+    ma20 = v1.sma(closes, 20)
+    ma50 = v1.sma(closes, 50)
+    last = closes[-1]
+    highs = [b["h"] for b in daily[-21:-1]]
+    resistance = max(highs)
+    if resistance <= 0 or ma20 <= 0 or ma50 <= 0:
+        return {"score": 0, "status": "INVALID"}
+    distance_pct = 100 * (resistance - last) / resistance
+    ranges = [(b["h"] - b["l"]) / b["c"] for b in daily[-20:] if b["c"] > 0]
+    if len(ranges) != 20:
+        return {"score": 0, "status": "INVALID"}
+    older_range = sum(ranges[:10]) / 10
+    newer_range = sum(ranges[10:]) / 10
+    older_vol = sum(b["v"] for b in daily[-20:-10]) / 10
+    newer_vol = sum(b["v"] for b in daily[-10:]) / 10
+    trend = ma20 > ma50 and last >= ma20
+    near_pivot = 0 <= distance_pct <= 5
+    contracting = older_range > 0 and newer_range <= older_range * 0.85
+    volume_dryup = older_vol > 0 and newer_vol <= older_vol * 0.85
+    score = (30 if trend else 0) + (30 if near_pivot else 0) + (20 if contracting else 0) + (20 if volume_dryup else 0)
+    return {"score": score, "status": "WATCH" if trend and near_pivot and (contracting or volume_dryup) else "NOT_READY",
+            "pivot_vnd": resistance, "distance_to_pivot_pct": round(distance_pct, 2),
+            "trend": trend, "range_contraction": contracting, "volume_dryup": volume_dryup}
+
+
+
 def evaluate(daily, intraday, benchmark, now, regime):
     closed = [b for b in intraday if b["t"] + 60 <= now.timestamp()
               and datetime.fromtimestamp(b["t"], v1.VN_TZ).date() == now.date()]
@@ -387,6 +419,7 @@ def run(args, client=None, now=None):
                     cache["symbols"][symbol] = raw
                 daily = completed_daily(raw, now, previous)
                 item["last_daily_bar"] = v1.snapshot_bar(daily[-1])
+                item["pre_breakout"] = pre_breakout_rank(daily)
                 if daily_screen(daily):
                     candidates.append((symbol, daily))
                 else:
@@ -396,7 +429,13 @@ def run(args, client=None, now=None):
             except Exception:
                 item.update(status="ERROR", error="daily fetch failed")
         atomic_json(cache_path, cache)
+        candidates.sort(key=lambda candidate: (-snapshot["symbols"][candidate[0]]["pre_breakout"]["score"], candidate[0]))
         snapshot["candidate_count"] = len(candidates)
+        snapshot["pre_breakout_watchlist"] = [
+            {"symbol": symbol, **snapshot["symbols"][symbol]["pre_breakout"]}
+            for symbol, _ in candidates if snapshot["symbols"][symbol]["pre_breakout"]["status"] == "WATCH"
+        ][:50]
+        snapshot["pre_breakout_rank_note"] = "Daily-only WATCH priority, not an S1-S5 BUY confirmation"
         if args.mode == "live":
             if os.environ.get("GITHUB_ACTIONS") == "true":
                 ledger = GitHubLedger(os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_TOKEN"])
