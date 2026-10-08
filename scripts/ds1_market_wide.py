@@ -368,12 +368,54 @@ def send_alert(symbol, item, now, ledger, session=None):
         return "ERROR"
 
 
+def send_watch(symbol, item, now, ledger, session=None):
+    """WATCH-only notice after a fresh completed intraday bar; never a trade instruction."""
+    watch = item.get("pre_breakout") or {}
+    bar = item.get("last_closed_1m_bar") or {}
+    if watch.get("status") != "WATCH" or watch.get("score", 0) < 70:
+        return "NOT_ELIGIBLE"
+    if item.get("status") in ("ERROR", "STALE", "BLOCKED", "INSUFFICIENT_DATA"):
+        return "NOT_ELIGIBLE"
+    try:
+        ts = datetime.fromisoformat(bar["bar_time"])
+        age = now.timestamp() - ts.timestamp() - 60
+    except (KeyError, ValueError, TypeError):
+        return "NOT_ELIGIBLE"
+    if ts.tzinfo is None or ts.date() != now.date() or not 0 <= age <= 240:
+        return "NOT_ELIGIBLE"
+    key = f"WATCH|{now.date()}|{symbol}|PRE_BREAKOUT"
+    if not ledger.reserve(key):
+        return "DUPLICATE_SUPPRESSED"
+    message = (f"DS1 v2 PRE-BREAKOUT WATCH — {symbol}\\n"
+               f"Priority {watch['score']}/100 (daily ranking; NOT BUY score)\\n"
+               f"Pivot {watch['pivot_vnd']:.0f} VND | Distance {watch['distance_to_pivot_pct']:.2f}%\\n"
+               f"1m bar {bar['bar_time']}\\n"
+               "PAPER WATCH ONLY — NOT A BUY SIGNAL. No Entry/SL/TP validated.\\n"
+               "Manual confirmation required; never chase breakout.")
+    try:
+        response = (session or requests).post(
+            f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendMessage",
+            json={"chat_id": os.environ["TELEGRAM_CHAT_ID"], "text": message}, timeout=(5, 20))
+        response.raise_for_status()
+        payload = response.json()
+        message_id = payload.get("result", {}).get("message_id")
+        if payload.get("ok") is not True or not isinstance(message_id, int):
+            raise ValueError("Telegram WATCH not acknowledged")
+        ledger.sent(key, message_id)
+        item["watch_telegram_message_id"] = message_id
+        return "WATCH_SENT"
+    except Exception:
+        item["watch_error"] = "WATCH delivery uncertain; reservation retained"
+        return "ERROR"
+
+
+
 def run(args, client=None, now=None):
     now = now or datetime.now(v1.VN_TZ)
     client = client or Client(args.interval)
     snapshot = {"schema_version": 2, "generated_at": now.isoformat(), "mode": args.mode,
                 "price_unit": "VND", "price_type": "completed_1m_ohlcv_close_not_tick",
-                "status": "INITIALIZING", "symbols": {}, "alerts_sent": 0}
+                "status": "INITIALIZING", "symbols": {}, "alerts_sent": 0, "watch_sent": 0}
     ledger = None
     started = time.monotonic()
     try:
@@ -436,6 +478,18 @@ def run(args, client=None, now=None):
             for symbol, _ in candidates if snapshot["symbols"][symbol]["pre_breakout"]["status"] == "WATCH"
         ][:50]
         snapshot["pre_breakout_rank_note"] = "Daily-only WATCH priority, not an S1-S5 BUY confirmation"
+        watch_enabled = getattr(args, "watch_telegram", False)
+        if watch_enabled:
+            if args.mode != "paper":
+                raise ValueError("WATCH Telegram requires paper mode")
+            if not all(os.environ.get(k) for k in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID")):
+                raise ValueError("WATCH Telegram credentials missing")
+            if os.environ.get("GITHUB_ACTIONS") == "true":
+                if not all(os.environ.get(k) for k in ("GITHUB_REPOSITORY", "GITHUB_TOKEN")):
+                    raise ValueError("WATCH remote ledger credentials missing")
+                ledger = GitHubLedger(os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_TOKEN"])
+            else:
+                ledger = Ledger(ROOT / "watch_alerts.sqlite3")
         if args.mode == "live":
             if os.environ.get("GITHUB_ACTIONS") == "true":
                 ledger = GitHubLedger(os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_TOKEN"])
@@ -457,7 +511,10 @@ def run(args, client=None, now=None):
                     continue
                 item.update(evaluate(daily, intraday, benchmark, scan_now, regime))
                 item["market_regime"] = regime
-                if item["status"] == "PAPER_VALIDATED" and ledger:
+                if watch_enabled and ledger:
+                    item["watch_delivery"] = send_watch(symbol, item, scan_now, ledger)
+                    snapshot["watch_sent"] += item["watch_delivery"] == "WATCH_SENT"
+                if item["status"] == "PAPER_VALIDATED" and ledger and not watch_enabled:
                     item["status"] = send_alert(symbol, item, scan_now, ledger)
                     snapshot["alerts_sent"] += item["status"] == "ALERTED"
             except Exception:
@@ -485,6 +542,7 @@ def main():
     source.add_argument("--universe-file")
     parser.add_argument("--mode", choices=("paper", "live"), default="paper")
     parser.add_argument("--interval", type=float, default=1.0)
+    parser.add_argument("--watch-telegram", action="store_true", help="Opt-in PAPER WATCH notifications; no BUY")
     args = parser.parse_args()
     args.clock_live = True
     return run(args)
