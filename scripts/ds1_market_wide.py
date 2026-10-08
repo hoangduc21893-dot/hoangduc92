@@ -79,9 +79,10 @@ class Client:
                                       "from": int(now.timestamp()) - seconds, "to": int(now.timestamp())})
         result = validate_bars(payload)
         # Live PVT payload verified 2026-10-08: 25.55 means 25,550 VND.
-        for bar in result:
-            for key in "ohlc":
-                bar[key] *= 1000
+        if symbol != "VN30":
+            for bar in result:
+                for key in "ohlc":
+                    bar[key] *= 1000
         return result
 
 
@@ -339,7 +340,8 @@ def run(args, client=None, now=None):
     now = now or datetime.now(v1.VN_TZ)
     client = client or Client(args.interval)
     snapshot = {"schema_version": 2, "generated_at": now.isoformat(), "mode": args.mode,
-                "price_unit": "VND", "status": "INITIALIZING", "symbols": {}, "alerts_sent": 0}
+                "price_unit": "VND", "price_type": "completed_1m_ohlcv_close_not_tick",
+                "status": "INITIALIZING", "symbols": {}, "alerts_sent": 0}
     ledger = None
     started = time.monotonic()
     try:
@@ -354,7 +356,9 @@ def run(args, client=None, now=None):
             payload = discover(client, now)
         symbols, previous, excluded = parse_manifest(payload, now)
         snapshot.update(universe_source=payload["source"], universe_count=len(symbols),
-                        excluded=excluded, previous_trading_date=str(previous))
+                        excluded=excluded, previous_trading_date=str(previous),
+                        calendar_verified=payload.get("calendar_verified", False),
+                        security_types_verified=payload.get("security_types_verified", False))
         # Production requires explicit operational validation, never inferred from CI.
         if args.mode == "live" and os.environ.get("DS1_V2_VALIDATED") != "true":
             raise ValueError("live requires DS1_V2_VALIDATED=true after operational validation")
@@ -407,7 +411,13 @@ def run(args, client=None, now=None):
                     item.update(status="BLOCKED", block_reasons=["session ended during scan"])
                     continue
                 intraday = client.ohlcv(symbol, "1", scan_now)
+                # A slow request/retry must not freeze freshness at request start.
+                scan_now = datetime.now(v1.VN_TZ) if args.clock_live else now
+                if not v1.in_session(scan_now) or scan_now.date() != now.date():
+                    item.update(status="BLOCKED", block_reasons=["session ended during fetch"])
+                    continue
                 item.update(evaluate(daily, intraday, benchmark, scan_now, regime))
+                item["market_regime"] = regime
                 if item["status"] == "PAPER_VALIDATED" and ledger:
                     item["status"] = send_alert(symbol, item, scan_now, ledger)
                     snapshot["alerts_sent"] += item["status"] == "ALERTED"
