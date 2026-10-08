@@ -1,6 +1,12 @@
 name: DS1 Conservative Watch
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/ds1_watch.py'
+      - 'test_ds1_snapshot.py'
+      - '.github/workflows/mwg_breakout_watch.yml'
   schedule:
     - cron: '*/5 * * * 1-5'
   workflow_dispatch:
@@ -33,17 +39,23 @@ jobs:
       - name: Install dependencies
         run: python -m pip install requests
 
+      - name: Test DS1 snapshot (offline)
+        run: python -m unittest -v test_ds1_snapshot.py
+
       - name: Run DS1 conservative watcher
+        if: ${{ github.event_name != 'pull_request' }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scripts/ds1_watch.py
 
-      - name: Save DS1 signal history
+      - name: Save DS1 signal history and latest snapshot
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ds1-signal-history-${{ github.run_id }}
-          path: data/signal_history.jsonl
+          path: |
+            data/signal_history.jsonl
+            data/ds1_latest_snapshot.json
           if-no-files-found: ignore
           retention-days: 90
