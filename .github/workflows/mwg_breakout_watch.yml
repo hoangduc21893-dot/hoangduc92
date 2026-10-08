@@ -1,6 +1,12 @@
 name: DS1 Conservative Watch
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/ds1_watch.py'
+      - 'test_ds1_snapshot.py'
+      - '.github/workflows/mwg_breakout_watch.yml'
   schedule:
     - cron: '*/5 * * * 1-5'
   workflow_dispatch:
@@ -37,6 +43,7 @@ jobs:
         run: python -m unittest -v test_ds1_snapshot.py
 
       - name: Run DS1 conservative watcher
+        if: ${{ github.event_name != 'pull_request' }}
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
