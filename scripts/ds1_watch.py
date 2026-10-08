@@ -30,6 +30,7 @@ VN_TZ=ZoneInfo("Asia/Ho_Chi_Minh")
 BASE_URL="https://services.entrade.com.vn/chart-api/v2/ohlcs/stock"
 STATE_PATH=Path("data/ds1_watch_state.json")
 HISTORY_PATH=Path("data/signal_history.jsonl")
+SNAPSHOT_PATH=Path("data/ds1_latest_snapshot.json")
 HEADERS={"accept":"application/json, text/plain, */*","origin":"https://www.dnse.com.vn","referer":"https://www.dnse.com.vn/","user-agent":"Mozilla/5.0"}
 
 def in_session(now):
@@ -227,46 +228,131 @@ def telegram(message):
     r=requests.post(f"https://api.telegram.org/bot{token}/sendMessage",json={"chat_id":chat_id,"text":message},timeout=15)
     r.raise_for_status()
 
+def write_snapshot(snapshot):
+    """Atomic, timestamped OHLCV snapshot; not a live tick feed."""
+    SNAPSHOT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    temp = SNAPSHOT_PATH.with_suffix(".json.tmp")
+    temp.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2, allow_nan=False), encoding="utf-8")
+    temp.replace(SNAPSHOT_PATH)
+
+
+def snapshot_bar(bar):
+    if not bar:
+        return None
+    return {
+        "bar_time": datetime.fromtimestamp(bar["t"], VN_TZ).isoformat(),
+        "open": bar["o"], "high": bar["h"], "low": bar["l"],
+        "close": bar["c"], "volume": bar["v"],
+    }
+
+
 def main():
     now=datetime.now(VN_TZ)
-    if now.weekday()>=5 or not in_session(now): return 0
-    vn30=bars(fetch("VN30","1D",120*24*60*60)); regime=market_regime(vn30)
-    print(f"MARKET REGIME={regime}")
-    state=load_state(); alerts=0
-    for symbol in DS1:
+    snapshot={
+        "schema_version":1,
+        "generated_at":now.isoformat(),
+        "timezone":"Asia/Ho_Chi_Minh",
+        "source":"DNSE chart-api/v2/ohlcs/stock",
+        "price_type":"last_completed_1m_ohlcv_bar_close_not_tick_quote",
+        "resolution":"1m",
+        "session_active":now.weekday()<5 and in_session(now),
+        "market_regime":"UNKNOWN",
+        "symbols_expected":list(DS1),
+        "symbols":{},
+        "alerts_sent":0,
+        "status":"INITIALIZING",
+        "note":"Bar timestamps are exchange-local; OHLCV endpoint may be delayed. This is not verified tick-level realtime data."
+    }
+    try:
+        if not snapshot["session_active"]:
+            snapshot["status"]="OUT_OF_SESSION"
+            return 0
         try:
-            intraday=bars(fetch(symbol,"1",24*60*60)); daily=bars(fetch(symbol,"1D",120*24*60*60))
-            if len(intraday)<10 or len(daily)<60: print(f"{symbol}: insufficient data"); continue
-            vr=volume_ratio(intraday,daily,now); rs=relative_strength(daily,vn30)
-            candidates=[
-                detect_s5(daily,intraday,vr),
-                detect_s3(daily,intraday,vr),
-                detect_s4(daily,intraday),
-                detect_s1(daily,intraday,vr),
-                detect_s2(daily,intraday,vr),
-            ]
-            candidates=[x for x in candidates if x is not None]
-            if not candidates: print(f"{symbol}: no confirmed S1-S5 setup"); continue
-            priority={"S5 VCP Breakout":5,"S3 Breakout Momentum":4,"S4 Pullback Trend Following":3,"S1 Stock Swing Trading":2,"S2 Mean Reversion":1}
-            signal=max(candidates,key=lambda x:priority.get(x["strategy"],0))
-            risk=risk_engine(signal["price"],signal["level"],daily,signal["strategy"])
-            score,parts=score_signal(daily,vr,rs,signal["strategy"],risk)
-            blocked=[]
-            allowed_regimes={"S1 Stock Swing Trading":{"TREND_UP","RANGE"},"S2 Mean Reversion":{"RANGE"},"S3 Breakout Momentum":{"TREND_UP"},"S4 Pullback Trend Following":{"TREND_UP"},"S5 VCP Breakout":{"TREND_UP"}}
-            if regime not in allowed_regimes.get(signal["strategy"],set()): blocked.append(f"regime={regime} not allowed for {signal['strategy']}")
-            if score<MIN_SCORE: blocked.append(f"score={score}<{MIN_SCORE}")
-            if risk is None: blocked.append("risk_engine_failed")
-            elif risk["rr"]<MIN_RR: blocked.append(f"rr={risk['rr']:.2f}<2.0")
-            record={"timestamp":now.isoformat(),"symbol":symbol,"strategy":signal["strategy"],"market_regime":regime,"score":score,"score_parts":parts,"price":signal["price"],"trigger":signal["trigger"],"volume_ratio":vr,"relative_strength_20d_vs_vn30":rs,"risk":risk,"status":"BLOCKED" if blocked else "ALERTED","block_reasons":blocked}
-            append_history(record)
-            if blocked: print(f"{symbol}: BLOCKED {blocked}"); continue
-            key=f"{now:%Y-%m-%d}|{symbol}|{signal['strategy']}"
-            if state.get("alert_keys",{}).get(key): print(f"{symbol}: alert already sent"); continue
-            r=risk
-            message=(f"🚨 DS1 CONFIRMED — {symbol}\n\nStrategy: {signal['strategy']}\nMarket Regime: {regime}\nScore: {score}/100\nEntry: {r['entry']:.2f}\nSL: {r['sl']:.2f}\nTP1: {r['tp1']:.2f}\nTP2: {r['tp2']:.2f}\nR:R: 1:{r['rr']:.2f}\nSize: {r['shares']:,} cp | Position: {r['position_value']:,.0f} VND\nRisk: {r['risk_vnd']:,.0f} VND\nVolume: {vr:.2f}x | RS20D: {rs*100:.1f}pp vs VN30\nTrigger: {signal['trigger']}\n\nAction: BUY only after final manual check.\nSafety: FALSE POSITIVE = NGHIÊM CẤM.")
-            telegram(message); state.setdefault("alert_keys",{})[key]=now.isoformat(); save_state(state); alerts+=1
-        except Exception as exc: print(f"{symbol}: ERROR {exc}")
-    print(f"DS1 scan complete. Alerts={alerts}/{len(DS1)}")
-    return 0
+            vn30=bars(fetch("VN30","1D",120*24*60*60))
+            regime=market_regime(vn30)
+            snapshot["market_regime"]=regime
+            print(f"MARKET REGIME={regime}")
+        except Exception as exc:
+            snapshot["status"]="MARKET_DATA_ERROR"
+            snapshot["error"]=f"{type(exc).__name__}: {exc}"
+            print(f"VN30: ERROR {exc}")
+            return 1
+        state=load_state(); alerts=0
+        for symbol in DS1:
+            item={"status":"FETCHING","source":BASE_URL,"resolution":"1m"}
+            snapshot["symbols"][symbol]=item
+            try:
+                intraday=bars(fetch(symbol,"1",24*60*60))
+                daily=bars(fetch(symbol,"1D",120*24*60*60))
+                # The final OHLCV bar may still be forming; use only a completed bar.
+                closed=intraday[:-1]
+                latest=closed[-1] if closed else None
+                item["last_closed_1m_bar"]=snapshot_bar(latest)
+                item["last_daily_bar"]=snapshot_bar(daily[-2] if len(daily)>1 else None)
+                item["closed_bar_age_seconds"]=max(0,int(now.timestamp()-latest["t"]-60)) if latest else None
+                item["freshness"]="FRESH" if latest and 0<=now.timestamp()-latest["t"]<=300 else "STALE_OR_MISSING"
+                item["intraday_bars"]=len(intraday)
+                item["daily_bars"]=len(daily)
+                if len(intraday)<10 or len(daily)<60:
+                    item["status"]="INSUFFICIENT_DATA"
+                    print(f"{symbol}: insufficient data")
+                    continue
+                vr=volume_ratio(intraday,daily,now)
+                rs=relative_strength(daily,vn30)
+                item["volume_ratio"]=vr
+                item["relative_strength_20d_vs_vn30"]=rs
+                candidates=[
+                    detect_s5(daily,intraday,vr),
+                    detect_s3(daily,intraday,vr),
+                    detect_s4(daily,intraday),
+                    detect_s1(daily,intraday,vr),
+                    detect_s2(daily,intraday,vr),
+                ]
+                candidates=[x for x in candidates if x is not None]
+                if not candidates:
+                    item["status"]="NO_SETUP"
+                    print(f"{symbol}: no confirmed S1-S5 setup")
+                    continue
+                priority={"S5 VCP Breakout":5,"S3 Breakout Momentum":4,"S4 Pullback Trend Following":3,"S1 Stock Swing Trading":2,"S2 Mean Reversion":1}
+                signal=max(candidates,key=lambda x:priority.get(x["strategy"],0))
+                risk=risk_engine(signal["price"],signal["level"],daily,signal["strategy"])
+                score,parts=score_signal(daily,vr,rs,signal["strategy"],risk)
+                blocked=[]
+                allowed_regimes={"S1 Stock Swing Trading":{"TREND_UP","RANGE"},"S2 Mean Reversion":{"RANGE"},"S3 Breakout Momentum":{"TREND_UP"},"S4 Pullback Trend Following":{"TREND_UP"},"S5 VCP Breakout":{"TREND_UP"}}
+                if regime not in allowed_regimes.get(signal["strategy"],set()): blocked.append(f"regime={regime} not allowed for {signal['strategy']}")
+                if score<MIN_SCORE: blocked.append(f"score={score}<{MIN_SCORE}")
+                if risk is None: blocked.append("risk_engine_failed")
+                elif risk["rr"]<MIN_RR: blocked.append(f"rr={risk['rr']:.2f}<2.0")
+                item.update({"strategy":signal["strategy"],"score":score,"score_parts":parts,"trigger":signal["trigger"],"risk":risk,"block_reasons":blocked})
+                record={"timestamp":now.isoformat(),"symbol":symbol,"strategy":signal["strategy"],"market_regime":regime,"score":score,"score_parts":parts,"price":signal["price"],"trigger":signal["trigger"],"volume_ratio":vr,"relative_strength_20d_vs_vn30":rs,"risk":risk,"status":"BLOCKED" if blocked else "ALERTED","block_reasons":blocked}
+                append_history(record)
+                if blocked:
+                    item["status"]="BLOCKED"
+                    print(f"{symbol}: BLOCKED {blocked}")
+                    continue
+                key=f"{now:%Y-%m-%d}|{symbol}|{signal['strategy']}"
+                if state.get("alert_keys",{}).get(key):
+                    item["status"]="DUPLICATE_SUPPRESSED"
+                    print(f"{symbol}: alert already sent")
+                    continue
+                r=risk
+                message=(f"🚨 DS1 CONFIRMED — {symbol}\n\nStrategy: {signal['strategy']}\nMarket Regime: {regime}\nScore: {score}/100\nEntry: {r['entry']:.2f}\nSL: {r['sl']:.2f}\nTP1: {r['tp1']:.2f}\nTP2: {r['tp2']:.2f}\nR:R: 1:{r['rr']:.2f}\nSize: {r['shares']:,} cp | Position: {r['position_value']:,.0f} VND\nRisk: {r['risk_vnd']:,.0f} VND\nVolume: {vr:.2f}x | RS20D: {rs*100:.1f}pp vs VN30\nTrigger: {signal['trigger']}\n\nAction: BUY only after final manual check.\nSafety: FALSE POSITIVE = NGHIÊM CẤM.")
+                telegram(message)
+                state.setdefault("alert_keys",{})[key]=now.isoformat()
+                save_state(state)
+                alerts+=1
+                item["status"]="ALERTED"
+            except Exception as exc:
+                item["status"]="ERROR"
+                item["error"]=f"{type(exc).__name__}: {exc}"
+                print(f"{symbol}: ERROR {exc}")
+        snapshot["alerts_sent"]=alerts
+        snapshot["status"]="COMPLETE" if all(x["status"]!="ERROR" for x in snapshot["symbols"].values()) else "PARTIAL_ERROR"
+        print(f"DS1 scan complete. Alerts={alerts}/{len(DS1)}")
+        return 0
+    finally:
+        snapshot["finished_at"]=datetime.now(VN_TZ).isoformat()
+        write_snapshot(snapshot)
+
 
 if __name__=="__main__": raise SystemExit(main())
