@@ -28,6 +28,7 @@ S5_VOLUME_RATIO_MAX=0.85
 S5_BREAKOUT_LOOKBACK=10
 VN_TZ=ZoneInfo("Asia/Ho_Chi_Minh")
 BASE_URL="https://services.entrade.com.vn/chart-api/v2/ohlcs/stock"
+INDEX_URL="https://services.entrade.com.vn/chart-api/v2/ohlcs/index"
 STATE_PATH=Path("data/ds1_watch_state.json")
 HISTORY_PATH=Path("data/signal_history.jsonl")
 SNAPSHOT_PATH=Path("data/ds1_latest_snapshot.json")
@@ -39,7 +40,8 @@ def in_session(now):
 
 def fetch(symbol,resolution,seconds):
     now=int(time.time())
-    r=requests.get(BASE_URL,params={"from":now-seconds,"to":now,"symbol":symbol,"resolution":resolution},headers=HEADERS,timeout=15)
+    endpoint=INDEX_URL if symbol=="VN30" else BASE_URL
+    r=requests.get(endpoint,params={"from":now-seconds,"to":now,"symbol":symbol,"resolution":resolution},headers=HEADERS,timeout=15)
     r.raise_for_status()
     data=r.json()
     if not isinstance(data,dict): raise RuntimeError(f"{symbol}: invalid DNSE response")
