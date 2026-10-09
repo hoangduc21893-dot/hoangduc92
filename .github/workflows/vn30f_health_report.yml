@@ -1,0 +1,29 @@
+name: VN30F Health Report PR-A
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '15 8 * * 1-5'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run offline tests
+        run: python -m unittest -v test_vn30f_health_report.py
+      - name: Send daily health summary
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/vn30f_health_report.py
+      - name: Save report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vn30f-health-${{ github.run_id }}
+          path: data/vn30f_health_report.json
+          if-no-files-found: ignore
+          retention-days: 90
