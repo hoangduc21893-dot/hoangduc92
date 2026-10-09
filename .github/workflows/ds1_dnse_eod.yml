@@ -1,0 +1,33 @@
+name: DS1 DNSE Verified Daily Close
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 08:45 UTC = 15:45 ICT; delayed run is safe; missing bars fail closed.
+    - cron: '45 8 * * 1-5'
+
+permissions:
+  contents: read
+
+jobs:
+  eod:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install requests tzdata
+      - name: Unit tests
+        run: python -m unittest -v test_ds1_eod_report
+      - name: Fetch DNSE verified daily candles (never 1m)
+        run: python -m scripts.ds1_eod_report
+      - name: Upload report even if incomplete
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-dnse-eod-${{ github.run_id }}
+          path: data/ds1_eod/
+          if-no-files-found: warn
+          retention-days: 90

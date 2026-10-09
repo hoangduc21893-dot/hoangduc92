@@ -1,0 +1,42 @@
+name: DS1 v2 Telegram WATCH (manual gated)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ds1-v2-watch-alert-ledger
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: ds1-v2-watch
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install requests tzdata
+      - name: Offline regression
+        run: python -m unittest -v test_ds1_market_wide test_ds1_snapshot
+      - name: PAPER scan with opt-in WATCH only
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
+          DS1_V2_VALIDATED: 'false'
+        run: python -m scripts.ds1_market_wide --mode paper --watch-telegram
+      - name: Upload PAPER diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-v2-watch-${{ github.run_id }}-${{ github.run_attempt }}
+          path: data/ds1_v2/
+          if-no-files-found: ignore
+          retention-days: 90
