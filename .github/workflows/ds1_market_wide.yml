@@ -7,6 +7,9 @@ on:
       - 'scripts/ds1_market_wide.py'
       - 'scripts/ds1_watch.py'
       - 'test_ds1_market_wide.py'
+      - 'scripts/ds1_eod_report.py'
+      - 'test_ds1_eod_report.py'
+      - '.github/workflows/ds1_dnse_eod.yml'
       - '.github/workflows/ds1_market_wide.yml'
   workflow_dispatch:
   # GitHub cron uses UTC; 02:20/06:10 UTC = 09:20/13:10 ICT.
@@ -34,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: python -m pip install requests tzdata
       - name: Offline regression tests
-        run: python -m unittest -v test_ds1_market_wide test_ds1_snapshot
+        run: python -m unittest -v test_ds1_market_wide test_ds1_snapshot test_ds1_eod_report
       - name: Restore daily data cache
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
         uses: actions/cache@v4
