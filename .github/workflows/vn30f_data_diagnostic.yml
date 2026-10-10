@@ -1,0 +1,39 @@
+name: VN30F Data Diagnostic (paper-only)
+on:
+  pull_request:
+    paths:
+      - 'scripts/vn30f_data_diagnostic.py'
+      - 'test_vn30f_data_diagnostic.py'
+      - '.github/workflows/vn30f_data_diagnostic.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m unittest -v test_vn30f_data_diagnostic.py
+  manual-live-diagnostic:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check DNSE and Telegram (no trades)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/vn30f_data_diagnostic.py
+      - name: Save diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vn30f-data-diagnostic-${{ github.run_id }}
+          path: data/vn30f_data_diagnostic.json
+          if-no-files-found: ignore
