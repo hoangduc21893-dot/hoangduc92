@@ -10,7 +10,7 @@ from scripts.ds1_market_wide import Client, atomic_json
 
 TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 CORE = ("PVT","PVS","MSB","HAH","BSR","VGC","DHC","VPB","MWG","HDB","PET","HPG","DCM","GMD")
-PENDING = ("PLX","ANV","VHC","GVR")
+PENDING = ("PLX","ANV","VHC","GVR","PHR")
 OUTPUT = Path("data/ds1_eod")
 
 def extract_daily_close(bars, target):
