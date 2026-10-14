@@ -69,7 +69,7 @@ jobs:
               except Exception as ex:
                   print('DS1_INTRADAY_ERROR '+json.dumps({'symbol':s,'reason':str(ex)}))
           PY
-      - name: DS1 entire watchlist daily technical check (research only)
+      - name: Market candidate DNSE daily technical screening (research only)
         if: github.event_name == 'pull_request'
         continue-on-error: true
         run: |
@@ -80,7 +80,7 @@ jobs:
           from scripts.ds1_market_wide import Client, pre_breakout_rank
           c=Client(interval=1.0)
           asof=datetime(2026,10,15,2,0,tzinfo=ZoneInfo('Asia/Ho_Chi_Minh'))
-          for sym in ('DCM','HPG','VGC','HDB','MSB','PVT','PVS','HAH','BSR','DHC','VPB','MWG','PET','GMD','PLX','ANV','VHC','PHR','TCB','GVR'):
+          for sym in ('MBB','CTG','VCI','SHB','HAG','CSV','IDI','VGS','LAS','BCE','F88','NKG','ACB','TPB','VND'):
               try:
                   bars=c.ohlcv(sym,'1D',asof)
                   daily=[b for b in bars if datetime.fromtimestamp(b['t'],ZoneInfo('Asia/Ho_Chi_Minh')).date().isoformat()<='2026-10-14']
