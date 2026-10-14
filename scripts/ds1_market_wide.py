@@ -510,6 +510,8 @@ def run(args, client=None, now=None):
                     item.update(status="BLOCKED", block_reasons=["session ended during fetch"])
                     continue
                 item.update(evaluate(daily, intraday, benchmark, scan_now, regime))
+                if symbol == "GVR":
+                    item.update(status="BLOCKED", block_reasons=["DS1 WATCH RISK: no BUY alerts until reactivated"])
                 item["market_regime"] = regime
                 if watch_enabled and ledger:
                     item["watch_delivery"] = send_watch(symbol, item, scan_now, ledger)
