@@ -10,7 +10,8 @@ from scripts.ds1_market_wide import Client, atomic_json
 
 TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 CORE = ("FPT","DGW","PVT","PVS","MSB","HAH","BSR","VGC","DHC","VPB","MWG","HDB","PET","HPG","DCM","GMD")
-PENDING = ("PLX","ANV","VHC","GVR","PHR","TCB")
+PENDING = ("PLX","ANV","VHC","PHR","TCB")
+WATCH_RISK = ("GVR",)
 OUTPUT = Path("data/ds1_eod")
 
 def extract_daily_close(bars, target):
@@ -36,8 +37,8 @@ def export_for_day(target, client, output=OUTPUT):
         raise ValueError("EOD_NOT_READY")
     if target.weekday() >= 5:
         raise ValueError("NON_TRADING_WEEKDAY")
-    symbols = CORE + PENDING
-    data = {"schema_version": 1, "asof":target.isoformat(), "generated_at":now.isoformat(),
+    symbols = CORE + PENDING + WATCH_RISK
+    data = {"schema_version": 1, "watch_risk": list(WATCH_RISK), "asof":target.isoformat(), "generated_at":now.isoformat(),
             "status":"PARTIAL", "quotes":{}, "unverified":[], "source":"DNSE", "price_unit":"VND",
             "note":"Price is 1D OHLCV bar close, not auction tick; verify exchange final settlement when necessary."}
     with_errors=0
