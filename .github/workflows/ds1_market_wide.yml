@@ -38,6 +38,37 @@ jobs:
         run: python -m pip install requests tzdata
       - name: Offline regression tests
         run: python -m unittest -v test_ds1_market_wide test_ds1_snapshot test_ds1_eod_report
+      - name: VPB DCM HDB MSB TCB intraday 14 Oct historical research
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          from scripts.ds1_market_wide import Client, legacy_input
+          from scripts import ds1_watch as v1
+          tz=ZoneInfo('Asia/Ho_Chi_Minh')
+          asof=datetime(2026,10,15,2,0,tzinfo=tz)
+          at=datetime(2026,10,14,14,45,tzinfo=tz)
+          client=Client(interval=0.3)
+          for s in ('VPB','DCM','HDB','MSB','TCB'):
+              try:
+                  days=client.ohlcv(s,'1D',asof)
+                  old=[x for x in days if datetime.fromtimestamp(x['t'],tz).date().isoformat()<'2026-10-14']
+                  mins=client.ohlcv(s,'1',asof)
+                  mins=[x for x in mins if datetime.fromtimestamp(x['t'],tz).date().isoformat()=='2026-10-14' and x['t']+60<=at.timestamp()]
+                  if len(old)<55 or len(mins)<8: raise ValueError('INCOMPLETE_HISTORICAL_INTRADAY')
+                  daily=legacy_input(old)
+                  intra=legacy_input(mins)
+                  vr=v1.volume_ratio(intra,daily,at)
+                  s3=v1.detect_s3(daily,intra,vr)
+                  s4=v1.detect_s4(daily,intra)
+                  result={'symbol':s,'bars':len(mins),'last_bar':datetime.fromtimestamp(mins[-1]['t'],tz).isoformat(),'last_close_vnd':mins[-1]['c'],'vol_ratio':round(vr,2),'S3':s3,'S4':s4,'historical_only':True}
+                  print('DS1_INTRADAY_HIST '+json.dumps(result,ensure_ascii=False))
+              except Exception as ex:
+                  print('DS1_INTRADAY_ERROR '+json.dumps({'symbol':s,'reason':str(ex)}))
+          PY
       - name: DS1 entire watchlist daily technical check (research only)
         if: github.event_name == 'pull_request'
         continue-on-error: true
