@@ -7,7 +7,10 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 import requests
 
-DS1 = ["PVT","PVS","MSB","HAH","BSR","VGC","DHC","VPB","MWG","HDB","PET","HPG","DCM","GMD"]
+DS1_ACTIVE = ["PVT","PVS","MSB","HAH","BSR","VGC","DHC","VPB","MWG","HDB","PET","HPG","DCM","GMD","PLX","ANV","VHC","PHR","TCB"]
+DS1_WATCH_RISK = ["GVR"]
+# The trading scanner processes ACTIVE symbols only. Keep WATCH RISK in EOD reporting.
+DS1 = DS1_ACTIVE
 NAV_VND=100_000_000
 RISK_PER_TRADE_VND=400_000
 MAX_POSITION_PCT=0.20
