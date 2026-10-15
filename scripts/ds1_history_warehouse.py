@@ -63,6 +63,19 @@ def corporate_action_flags(bars, threshold_pct=18):
                         "raw_overnight_gap_pct":round(gap,3),"status":"UNVERIFIED_POSSIBLE_ACTION_OR_EVENT"})
     return out
 
+def reconcile_calendar(symbol, bars, benchmark_dates, ledger):
+    """Record, never synthesize, non-trading sessions and benchmark gaps."""
+    dates={datetime.fromtimestamp(b["t"],TZ).date().isoformat() for b in bars}
+    bench={d.isoformat() if hasattr(d,"isoformat") else str(d) for d in benchmark_dates}
+    missing=sorted(bench-dates)
+    allowed={r["date"] for r in ledger.get("calendar_exceptions",{}).get(symbol,[]) if r.get("category")=="KNOWN_VENUE_TRANSFER_NONTRADING"}
+    known=sorted(set(missing)&allowed)
+    unresolved=sorted(set(missing)-allowed)
+    benchmark_gaps=sorted(dates-bench)
+    return {"nontrading_exceptions":known,"unresolved_missing_sessions":unresolved,
+            "stock_dates_absent_benchmark":benchmark_gaps,
+            "unknown_stock_only_dates":sorted(set(benchmark_gaps)-{r["date"] for r in ledger.get("benchmark_exceptions",[])})}
+
 def run(args,client=None):
     client=client or Client(interval=0.5)
     start,end=date.fromisoformat(args.start),date.fromisoformat(args.end)
@@ -74,11 +87,17 @@ def run(args,client=None):
         try:store[symbol]=backfill(client,symbol,start,end)
         except Exception as exc:errors[symbol]=str(exc)
     calendar={datetime.fromtimestamp(b["t"],TZ).date() for b in store.get("VN30",[])}
+    ledger_path=Path(__file__).resolve().parents[1]/"data/ds1_v2/corporate_action_ledger.json"
+    ledger=json.loads(ledger_path.read_text(encoding="utf-8"))
     results={}
     for symbol,bars in store.items():
         check=audit_series(bars,calendar if symbol!="VN30" else None)
         flags=corporate_action_flags(bars) if symbol!="VN30" else []
         check["corporate_action_candidates"]=flags
+        if symbol!="VN30":
+            check["calendar_reconciliation"]=reconcile_calendar(symbol,bars,calendar,ledger)
+            entry=next((x for x in ledger["symbols"] if x["symbol"]==symbol),None)
+            check["rights_ledger_status"]=entry["review_status"] if entry else "MISSING_LEDGER_ENTRY"
         check["price_adjustment_verified"]=False
         check["source"]="DNSE chart-api/v2/ohlcs; resolution=1D"
         check["source_units"]="VND" if symbol!="VN30" else "index_points"
@@ -91,10 +110,10 @@ def run(args,client=None):
                 for x in bars:w.writerow({"date":datetime.fromtimestamp(x["t"],TZ).date().isoformat(),"timestamp":int(x["t"]),
                     "open":x["o"],"high":x["h"],"low":x["l"],"close":x["c"],"volume":x["v"]})
             check["sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
-    complete=not errors and calendar and all(results[s]["missing_count"]==0 and not results[s]["errors"] for s in symbols if s!="VN30")
+    complete=bool(not errors and calendar and all(not results[s]["errors"] and not results[s]["calendar_reconciliation"]["unresolved_missing_sessions"] and not results[s]["calendar_reconciliation"]["unknown_stock_only_dates"] for s in symbols if s!="VN30"))
     validated_actions=False
     report={"status":"READY_FOR_ACTION_RECONCILIATION" if complete else "DATA_INCOMPLETE",
-      "research_only":True,"start":str(start),"end":str(end),"all_corporate_actions_verified":validated_actions,
+      "research_only":True,"calendar_exceptions_applied":True,"start":str(start),"end":str(end),"all_corporate_actions_verified":validated_actions,
       "full_backtest_approved":False,"symbols_attempted":len(symbols),"symbols_returned":len(store),
       "reference_calendar":"VN30 returned daily bars; not an official exchange holiday calendar",
       "errors":errors,"audits":results}
