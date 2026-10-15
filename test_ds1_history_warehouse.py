@@ -27,6 +27,18 @@ class WarehouseTests(unittest.TestCase):
   self.assertEqual(result["nontrading_exceptions"],["2025-01-07"])
   self.assertEqual(result["unresolved_missing_sessions"],[])
   self.assertEqual(len(bars),1)
+ def test_ledger_coverage_and_no_auto_adjustment(self):
+  from pathlib import Path
+  import json
+  from scripts.ds1_prebreakout_v2 import ACTIVE,WATCH_RISK
+  ledger=json.loads((Path(__file__).resolve().parent/"data/ds1_v2/corporate_action_ledger.json").read_text())
+  names=[x["symbol"] for x in ledger["symbols"]]
+  self.assertEqual(len(names),20)
+  self.assertEqual(set(names),set(ACTIVE+WATCH_RISK))
+  for item in ledger["symbols"]:
+   for event in item["events"]:
+    self.assertEqual(event["data_application"],"NEVER_AUTO_APPLY")
+    self.assertEqual(event["adjustment_status"],"UNVERIFIED")
  def test_unresolved_nontrading_blocks(self):
   result=reconcile_calendar("PVT",[],{date(2025,1,7)},{"calendar_exceptions":{},"benchmark_exceptions":[]})
   self.assertEqual(result["unresolved_missing_sessions"],["2025-01-07"])
