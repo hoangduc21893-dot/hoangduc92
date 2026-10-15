@@ -6,7 +6,7 @@ DailyStockPrice has ClosePriceAdjusted, NOT verified full adjusted OHLCV.
 """
 from __future__ import annotations
 import argparse,csv,hashlib,json,os,time
-from datetime import datetime
+from datetime import datetime,timedelta
 from pathlib import Path
 import requests
 BASE="https://fc-data.ssi.com.vn/api/v2/Market"
@@ -35,8 +35,10 @@ def fetch(session,token,endpoint,symbol,start,end,market=None):
     if page>100:raise ValueError("SSI pagination cap")
     return output
 def normalize(ohlc,quotes,symbol):
+    def field(x,key):
+        return {str(k).lower():v for k,v in x.items()}.get(key.lower())
     def datekey(x):
-        raw=x.get("TradingDate") or x.get("Tradingdate")
+        raw=field(x,"TradingDate")
         return datetime.strptime(raw,"%d/%m/%Y").date().isoformat()
     def numeric(v):
         if v is None or str(v).strip()=="":return None
@@ -47,13 +49,13 @@ def normalize(ohlc,quotes,symbol):
         d=datekey(p)
         if d in seen:raise ValueError("SSI duplicate date "+d)
         seen.add(d);q=qmap.get(d,{})
-        close=numeric(p.get("Close"));adj=numeric(q.get("ClosePriceAdjusted"))
-        raw_close=numeric(q.get("ClosePrice")) or close
-        rows.append({"date":d,"symbol":symbol,"market":p.get("Market"),
-                     "raw_open":numeric(p.get("Open")),"raw_high":numeric(p.get("High")),
-                     "raw_low":numeric(p.get("Low")),"raw_close":raw_close,
-                     "raw_volume":numeric(p.get("Volume")),
-                     "reference_price":numeric(q.get("RefPrice")),
+        close=numeric(field(p,"Close"));adj=numeric(field(q,"ClosePriceAdjusted"))
+        raw_close=numeric(field(q,"ClosePrice")) or close
+        rows.append({"date":d,"symbol":symbol,"market":field(p,"Market"),
+                     "raw_open":numeric(field(p,"Open")),"raw_high":numeric(field(p,"High")),
+                     "raw_low":numeric(field(p,"Low")),"raw_close":raw_close,
+                     "raw_volume":numeric(field(p,"Volume")),
+                     "reference_price":numeric(field(q,"RefPrice")),
                      "adjusted_close":adj,
                      "price_close_factor":adj/raw_close if adj is not None and raw_close and raw_close>0 else None,
                      "source_endpoint":"SSI:DailyOhlc+DailyStockPrice",
@@ -64,8 +66,15 @@ def run(args,session=None):
     token=get_token(session,os.getenv("SSI_CONSUMER_ID"),os.getenv("SSI_CONSUMER_SECRET"))
     from_date=datetime.strptime(args.start,"%Y-%m-%d").strftime("%d/%m/%Y")
     to_date=datetime.strptime(args.end,"%Y-%m-%d").strftime("%d/%m/%Y")
-    ohlc=fetch(session,token,"DailyOhlc",args.symbol,from_date,to_date,args.market)
-    prices=fetch(session,token,"DailyStockPrice",args.symbol,from_date,to_date,args.market)
+    ohlc=[];prices=[]
+    day=datetime.strptime(args.start,"%Y-%m-%d").date();last=datetime.strptime(args.end,"%Y-%m-%d").date()
+    if last<day:raise ValueError("reversed date range")
+    while day<=last:
+        stop=min(last,day+timedelta(days=29))
+        f=day.strftime("%d/%m/%Y");t=stop.strftime("%d/%m/%Y")
+        ohlc.extend(fetch(session,token,"DailyOhlc",args.symbol,f,t,args.market))
+        prices.extend(fetch(session,token,"DailyStockPrice",args.symbol,f,t,args.market))
+        day=stop+timedelta(days=1)
     rows=normalize(ohlc,prices,args.symbol)
     out=Path(args.output_dir);out.mkdir(parents=True,exist_ok=True)
     csvpath=out/(args.symbol+"_ssi_history.csv")
