@@ -68,7 +68,7 @@ def run(args,client=None):
     start,end=date.fromisoformat(args.start),date.fromisoformat(args.end)
     if end>=datetime.now(TZ).date():raise ValueError("Warehouse accepts historical completed dates only")
     out=Path(args.output_dir);out.mkdir(parents=True,exist_ok=True)
-    symbols=("VN30",)+ACTIVE+WATCH_RISK
+    symbols=("VN30",)+tuple(args.symbols.split(",")) if args.symbols else ("VN30",)+ACTIVE+WATCH_RISK
     store={};errors={}
     for symbol in symbols:
         try:store[symbol]=backfill(client,symbol,start,end)
@@ -91,7 +91,7 @@ def run(args,client=None):
                 for x in bars:w.writerow({"date":datetime.fromtimestamp(x["t"],TZ).date().isoformat(),"timestamp":int(x["t"]),
                     "open":x["o"],"high":x["h"],"low":x["l"],"close":x["c"],"volume":x["v"]})
             check["sha256"]=hashlib.sha256(p.read_bytes()).hexdigest()
-    complete=not errors and calendar and all(results[s]["missing_count"]==0 and not results[s]["errors"] for s in ACTIVE)
+    complete=not errors and calendar and all(results[s]["missing_count"]==0 and not results[s]["errors"] for s in symbols if s!="VN30")
     validated_actions=False
     report={"status":"READY_FOR_ACTION_RECONCILIATION" if complete else "DATA_INCOMPLETE",
       "research_only":True,"start":str(start),"end":str(end),"all_corporate_actions_verified":validated_actions,
@@ -109,6 +109,7 @@ def main():
     p.add_argument("--start",default="2023-01-01")
     p.add_argument("--end",default="2026-10-14")
     p.add_argument("--output-dir",default="data/ds1_v2/historical_warehouse")
+    p.add_argument("--symbols",default="",help="Comma-separated research subset; default full DS1")
     args=p.parse_args()
     return run(args)
 if __name__=="__main__":raise SystemExit(main())
