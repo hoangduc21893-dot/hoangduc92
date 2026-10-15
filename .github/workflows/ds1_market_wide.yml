@@ -9,6 +9,8 @@ on:
       - 'test_ds1_market_wide.py'
       - 'scripts/ds1_eod_report.py'
       - 'test_ds1_eod_report.py'
+      - 'scripts/ds1_prebreakout_v2.py'
+      - 'test_ds1_prebreakout_v2.py'
       - '.github/workflows/ds1_dnse_eod.yml'
       - '.github/workflows/ds1_market_wide.yml'
   workflow_dispatch:
