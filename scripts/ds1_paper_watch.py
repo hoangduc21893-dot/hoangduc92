@@ -28,7 +28,7 @@ def run(asof,client,output):
     return payload
 def main():
     p=argparse.ArgumentParser()
-    p.add_argument("--date",default=(datetime.now(TZ).date()-timedelta(days=1)).isoformat())
+    p.add_argument("--date",default=datetime.now(TZ).date().isoformat())
     p.add_argument("--output",default=None)
     a=p.parse_args()
     # A complete daily bar must be available; compare() enforces exact requested trading date.
