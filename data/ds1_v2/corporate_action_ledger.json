@@ -262,7 +262,10 @@
           "source_url": "https://www.mbs.com.vn/thong-bao-ho-tro-tinh-quyen-co-phieu-100926/",
           "terms_status": "DOCUMENTED",
           "adjustment_status": "UNVERIFIED",
-          "data_application": "NEVER_AUTO_APPLY"
+          "data_application": "NEVER_AUTO_APPLY",
+          "independent_price_evidence_file": "data/ds1_v2/independent_price_evidence_2026_10_15.json",
+          "price_reference_status": "PARTIAL_THIRD_PARTY_CORROBORATION",
+          "full_raw_adjusted_ohlcv_verified": false
         }
       ]
     },
@@ -376,7 +379,10 @@
           "source_url": "https://vsdc.vn/vi/ad1/200797",
           "terms_status": "DOCUMENTED",
           "adjustment_status": "UNVERIFIED",
-          "data_application": "NEVER_AUTO_APPLY"
+          "data_application": "NEVER_AUTO_APPLY",
+          "independent_price_evidence_file": "data/ds1_v2/independent_price_evidence_2026_10_15.json",
+          "price_reference_status": "PARTIAL_THIRD_PARTY_CORROBORATION",
+          "full_raw_adjusted_ohlcv_verified": false
         },
         {
           "record_date": "2026-05-22",
