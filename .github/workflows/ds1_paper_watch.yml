@@ -25,6 +25,12 @@ jobs:
       - run: python -m pip install requests tzdata
       - name: Test paper watch
         run: python -m unittest -v test_ds1_paper_watch test_ds1_prebreakout_v2
+      - name: Historical closed-day DNSE smoke test (PR only; no alerts)
+        if: github.event_name == 'pull_request'
+        env:
+          TELEGRAM_BOT_TOKEN: ''
+          TELEGRAM_CHAT_ID: ''
+        run: python -m scripts.ds1_paper_watch --date 2026-10-14
       - name: Score today's completed DNSE daily bars (no BUY)
         if: github.event_name != 'pull_request'
         env:
@@ -32,7 +38,7 @@ jobs:
           TELEGRAM_CHAT_ID: ''
         run: python -m scripts.ds1_paper_watch
       - name: Upload daily snapshots
-        if: always() && github.event_name != 'pull_request'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ds1-v2-paper-watch-${{ github.run_id }}
