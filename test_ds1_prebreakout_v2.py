@@ -35,7 +35,7 @@ class ResearchV2Tests(unittest.TestCase):
         end=date(2026,10,14)
         d=bars()
         for i,b in enumerate(d):
-            b["t"]=datetime(2026,7,27,tzinfo=tz).timestamp()+i*86400
+            b["t"]=datetime(2026,7,26,tzinfo=tz).timestamp()+i*86400
         with self.assertRaisesRegex(ValueError,"TARGET_DATE_MISSING"):
             validate_series(d,end,"TEST")
         d[-1]["t"]=datetime(2026,10,14,tzinfo=tz).timestamp()
