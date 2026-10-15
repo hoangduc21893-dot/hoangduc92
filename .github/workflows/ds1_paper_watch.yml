@@ -1,0 +1,48 @@
+name: DS1 Pre-Breakout V2 Paper Watch
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/ds1_paper_watch.py'
+      - 'test_ds1_paper_watch.py'
+      - 'scripts/ds1_prebreakout_paper.py'
+      - 'scripts/ds1_paper_dnse.py'
+      - '.github/workflows/ds1_paper_watch.yml'
+  workflow_dispatch:
+  # Only runs from default branch after this workflow is merged.
+  schedule:
+    - cron: '10 9 * * 1-5'
+permissions:
+  contents: read
+jobs:
+  paper-watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install requests tzdata
+      - name: Test paper watch
+        run: python -m unittest -v test_ds1_paper_watch
+      - name: Historical closed-day DNSE smoke test (PR only; no alerts)
+        if: github.event_name == 'pull_request'
+        env:
+          TELEGRAM_BOT_TOKEN: ''
+          TELEGRAM_CHAT_ID: ''
+        run: python -m scripts.ds1_paper_watch --date 2026-10-14
+      - name: Score today's completed DNSE daily bars (no BUY)
+        if: github.event_name != 'pull_request'
+        env:
+          TELEGRAM_BOT_TOKEN: ''
+          TELEGRAM_CHAT_ID: ''
+        run: python -m scripts.ds1_paper_watch
+      - name: Upload daily snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-v2-paper-watch-${{ github.run_id }}
+          path: data/ds1_v2/paper_watch/
+          if-no-files-found: warn
+          retention-days: 90
