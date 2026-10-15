@@ -1,0 +1,227 @@
+name: DS1 Market-Wide v2 Paper Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/ds1_market_wide.py'
+      - 'scripts/ds1_watch.py'
+      - 'test_ds1_market_wide.py'
+      - 'scripts/ds1_eod_report.py'
+      - 'test_ds1_eod_report.py'
+      - 'scripts/ds1_prebreakout_v2.py'
+      - 'test_ds1_prebreakout_v2.py'
+      - 'scripts/ds1_backtest_v2.py'
+      - 'test_ds1_backtest_v2.py'
+      - 'scripts/ds1_history_warehouse.py'
+      - 'test_ds1_history_warehouse.py'
+      - 'scripts/ds1_rights_reconciliation.py'
+      - 'test_ds1_rights_reconciliation test_ds1_independent_history test_ds1_ssi_fastconnect test_ds1_dnse_adjustment_audit.py'
+      - 'scripts/ds1_independent_history.py'
+      - 'test_ds1_independent_history.py'
+      - 'scripts/ds1_ssi_fastconnect.py'
+      - 'test_ds1_ssi_fastconnect.py'
+      - 'scripts/ds1_dnse_adjustment_audit.py'
+      - 'test_ds1_dnse_adjustment_audit.py'
+      - 'scripts/ds1_corporate_action_gate.py'
+      - 'data/ds1_v2/corporate_action_ledger.json'
+      - 'scripts/ds1_corporate_action_gate.py'
+      - 'test_ds1_corporate_action_gate.py'
+      - 'data/ds1_v2/corporate_action_ledger.json'
+      - '.github/workflows/ds1_dnse_eod.yml'
+      - '.github/workflows/ds1_market_wide.yml'
+  workflow_dispatch:
+  # GitHub cron uses UTC; 02:20/06:10 UTC = 09:20/13:10 ICT.
+  # Scheduled workflows execute only from the repository default branch.
+  schedule:
+    - cron: '20 2 * * 1-5'
+    - cron: '10 6 * * 1-5'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ds1-market-wide-v2-paper
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install requests tzdata
+      - name: Offline regression tests
+        run: python -m unittest -v test_ds1_market_wide test_ds1_snapshot test_ds1_eod_report test_ds1_prebreakout_v2 test_ds1_backtest_v2 test_ds1_history_warehouse test_ds1_corporate_action_gate test_ds1_rights_reconciliation
+      - name: VPB DCM HDB MSB TCB intraday 14 Oct historical research
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          from scripts.ds1_market_wide import Client, legacy_input
+          from scripts import ds1_watch as v1
+          tz=ZoneInfo('Asia/Ho_Chi_Minh')
+          asof=datetime(2026,10,15,2,0,tzinfo=tz)
+          at=datetime(2026,10,14,14,45,tzinfo=tz)
+          client=Client(interval=0.3)
+          for s in ('VPB','DCM','HDB','MSB','TCB'):
+              try:
+                  days=client.ohlcv(s,'1D',asof)
+                  old=[x for x in days if datetime.fromtimestamp(x['t'],tz).date().isoformat()<'2026-10-14']
+                  mins=client.ohlcv(s,'1',asof)
+                  mins=[x for x in mins if datetime.fromtimestamp(x['t'],tz).date().isoformat()=='2026-10-14' and x['t']+60<=at.timestamp()]
+                  if len(old)<55 or len(mins)<8: raise ValueError('INCOMPLETE_HISTORICAL_INTRADAY')
+                  daily=legacy_input(old)
+                  intra=legacy_input(mins)
+                  vr=v1.volume_ratio(intra,daily,at)
+                  s3=v1.detect_s3(daily,intra,vr)
+                  s4=v1.detect_s4(daily,intra)
+                  result={'symbol':s,'bars':len(mins),'last_bar':datetime.fromtimestamp(mins[-1]['t'],tz).isoformat(),'last_close_vnd':mins[-1]['c'],'vol_ratio':round(vr,2),'S3':s3,'S4':s4,'historical_only':True}
+                  print('DS1_INTRADAY_HIST '+json.dumps(result,ensure_ascii=False))
+              except Exception as ex:
+                  print('DS1_INTRADAY_ERROR '+json.dumps({'symbol':s,'reason':str(ex)}))
+          PY
+      - name: Market candidate DNSE daily technical screening (research only)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          from scripts.ds1_market_wide import Client, pre_breakout_rank
+          c=Client(interval=1.0)
+          asof=datetime(2026,10,15,2,0,tzinfo=ZoneInfo('Asia/Ho_Chi_Minh'))
+          for sym in ('MBB','CTG','VCI','SHB','HAG','CSV','IDI','VGS','LAS','BCE','F88','NKG','ACB','TPB','VND'):
+              try:
+                  bars=c.ohlcv(sym,'1D',asof)
+                  daily=[b for b in bars if datetime.fromtimestamp(b['t'],ZoneInfo('Asia/Ho_Chi_Minh')).date().isoformat()<='2026-10-14']
+                  daily.sort(key=lambda b:b['t'])
+                  if not daily or datetime.fromtimestamp(daily[-1]['t'],ZoneInfo('Asia/Ho_Chi_Minh')).date().isoformat()!='2026-10-14':
+                      raise ValueError('MISSING_14_OCT_DAILY')
+                  closes=[b['c'] for b in daily]
+                  ma20=sum(closes[-20:])/20 if len(closes)>=20 else None
+                  ma50=sum(closes[-50:])/50 if len(closes)>=50 else None
+                  pivot=max(b['h'] for b in daily[-21:-1]) if len(daily)>=21 else None
+                  avgvol=sum(b['v'] for b in daily[-21:-1])/20 if len(daily)>=21 else None
+                  rank=pre_breakout_rank(daily)
+                  print('DS1_FIVE_CHECK '+json.dumps({'symbol':sym,'n':len(daily),'date':'2026-10-14','close':daily[-1]['c'],'low':daily[-1]['l'],'high':daily[-1]['h'],'volume':daily[-1]['v'],'ma20':ma20,'ma50':ma50,'pivot20':pivot,'volume_ratio':daily[-1]['v']/avgvol if avgvol else None,'rank':rank},ensure_ascii=False))
+              except Exception as e: print('DS1_FIVE_CHECK_ERROR '+json.dumps({'symbol':sym,'reason':str(e)}))
+          PY
+      - name: Corporate action completeness gate (research)
+        run: python -m scripts.ds1_corporate_action_gate
+      - name: Reproducible rights OHLCV reconciliation (research only)
+        if: github.event_name == 'pull_request'
+        run: python -m scripts.ds1_rights_reconciliation
+      - name: Upload rights reconciliation and checksum
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-rights-reconciliation-${{ github.run_id }}
+          path: data/ds1_v2/rights_reconciliation/
+          if-no-files-found: warn
+      - name: Corporate action evidence gate (no price changes)
+        if: github.event_name == 'pull_request'
+        run: python -m scripts.ds1_corporate_action_gate
+      - name: Upload corporate action gate
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-rights-gate-${{ github.run_id }}
+          path: data/ds1_v2/corporate_action_gate.json
+          if-no-files-found: warn
+      - name: Historical warehouse full DS1 expansion and raw action audit (research only)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: python -m scripts.ds1_history_warehouse --start 2023-01-01 --end 2026-10-14
+      - name: DNSE first rights adjustment boundary audit
+        if: github.event_name == 'pull_request'
+        run: python -m scripts.ds1_dnse_adjustment_audit
+      - name: Upload DNSE first rights audit
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-dnse-rights-${{ github.run_id }}
+          path: data/ds1_v2/dnse_rights_audit/
+          if-no-files-found: warn
+      - name: Upload history data QA
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-history-qa-${{ github.run_id }}
+          path: data/ds1_v2/historical_warehouse/
+          if-no-files-found: warn
+      - name: Walk-forward feasibility research (no BUY)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          TELEGRAM_BOT_TOKEN: ''
+          TELEGRAM_CHAT_ID: ''
+        run: python -m scripts.ds1_backtest_v2 --end 2026-10-14
+      - name: Upload walk-forward research outputs
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-walkforward-${{ github.run_id }}
+          path: data/ds1_v2/backtest/
+          if-no-files-found: warn
+      - name: Pre-Breakout V2 research shadow score (no alerts)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          TELEGRAM_BOT_TOKEN: ''
+          TELEGRAM_CHAT_ID: ''
+        run: python -m scripts.ds1_prebreakout_v2 --date 2026-10-14
+      - name: Upload Pre-Breakout V2 comparison
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-prebreakout-v2-${{ github.run_id }}
+          path: data/ds1_v2/pre_breakout_v2_research.json
+          if-no-files-found: warn
+      - name: DNSE EOD 14 Oct 2026 post-close validation (PR only; no Telegram)
+        if: github.event_name == 'pull_request'
+        id: eod
+        continue-on-error: true
+        env:
+          TELEGRAM_BOT_TOKEN: ''
+          TELEGRAM_CHAT_ID: ''
+        run: python -m scripts.ds1_eod_report --date 2026-10-14
+      - name: Upload DNSE EOD 13 Oct CSV and JSON
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-dnse-eod-2026-10-14-${{ github.run_id }}
+          path: data/ds1_eod/
+          if-no-files-found: warn
+          retention-days: 90
+      - name: Restore daily data cache
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        uses: actions/cache@v4
+        with:
+          path: data/ds1_v2/daily_cache.json
+          key: ds1-v2-daily-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: ds1-v2-daily-
+      - name: Market-wide paper scan (no Telegram)
+        env:
+          DS1_V2_VALIDATED: 'false'
+          TELEGRAM_BOT_TOKEN: ''
+          TELEGRAM_CHAT_ID: ''
+        if: github.event_name == 'workflow_dispatch'
+        run: python -m scripts.ds1_market_wide --mode paper
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-v2-paper-${{ github.run_id }}-${{ github.run_attempt }}
+          path: data/ds1_v2/
+          if-no-files-found: ignore
+          retention-days: 90
+

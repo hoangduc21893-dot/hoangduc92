@@ -1,0 +1,598 @@
+{
+  "schema_version": 1,
+  "asof": "2026-10-15",
+  "status": "PARTIAL_UNVERIFIED",
+  "source_policy": "Event dates and terms may be confirmed separately from DNSE adjustment basis. NEVER apply factors automatically.",
+  "symbols": [
+    {
+      "symbol": "PVT",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-06-08",
+          "ex_date": null,
+          "event_type": "STOCK_DIVIDEND",
+          "stock_ratio_new_per_old": 0.1,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/ad/196198",
+          "terms_status": "PARTIALLY_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ],
+      "vsdc_issuer_page": "https://vsdc.vn/vi/s-detail/1500"
+    },
+    {
+      "symbol": "PVS",
+      "review_status": "HISTORY_REVIEW_REQUIRED",
+      "events": []
+    },
+    {
+      "symbol": "MSB",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-09-03",
+          "ex_date": null,
+          "event_type": "BONUS_SHARES",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/12308",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2025-09-09",
+          "ex_date": null,
+          "event_type": "STOCK_DIVIDEND",
+          "stock_ratio_new_per_old": 0.2,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/12308",
+          "terms_status": "PARTIALLY_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2024-08-29",
+          "ex_date": null,
+          "event_type": "STOCK_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/12308",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ],
+      "vsdc_issuer_page": "https://vsdc.vn/vi/s-detail/12308"
+    },
+    {
+      "symbol": "HAH",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-07-15",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/2558",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2025-08-08",
+          "ex_date": null,
+          "event_type": "STOCK_AND_CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/2558",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2024-06-24",
+          "ex_date": null,
+          "event_type": "STOCK_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/2558",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ],
+      "vsdc_issuer_page": "https://vsdc.vn/vi/s-detail/2558"
+    },
+    {
+      "symbol": "BSR",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-08-12",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/lich-giao-dich?date=12%2F08%2F2026&tab=LICH_THQ",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ]
+    },
+    {
+      "symbol": "VGC",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-07-29",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/3411",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2025-11-12",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/3411",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2024-10-22",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/3411",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ],
+      "vsdc_issuer_page": "https://vsdc.vn/vi/s-detail/3411"
+    },
+    {
+      "symbol": "DHC",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-10-06",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": 1000,
+          "source_url": "https://vsdc.vn/vi/ad1/200689",
+          "terms_status": "PARTIALLY_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ]
+    },
+    {
+      "symbol": "VPB",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-05-18",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": 500,
+          "source_url": "https://vsdc.vn/vi/ad1/195318",
+          "terms_status": "PARTIALLY_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2025-05-16",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": 500,
+          "source_url": "https://vsdc.vn/vi/ad1/182574",
+          "terms_status": "PARTIALLY_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ]
+    },
+    {
+      "symbol": "MWG",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-10-08",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/2167",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2026-07-30",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/2167",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2025-07-25",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/2167",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ],
+      "vsdc_issuer_page": "https://vsdc.vn/vi/s-detail/2167"
+    },
+    {
+      "symbol": "HDB",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "ex_date": "2026-10-09",
+          "event_type": "STOCK_DIVIDEND_AND_BONUS",
+          "stock_ratio_new_per_old": 0.3,
+          "theoretical_prior_share_price_factor": 0.7692307692307692,
+          "cash_dividend_vnd": null,
+          "source_url": "https://www.mbs.com.vn/thong-bao-ho-tro-tinh-quyen-co-phieu-100926/",
+          "terms_status": "DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY",
+          "independent_price_evidence_file": "data/ds1_v2/independent_price_evidence_2026_10_15.json",
+          "price_reference_status": "PARTIAL_THIRD_PARTY_CORROBORATION",
+          "full_raw_adjusted_ohlcv_verified": false
+        }
+      ]
+    },
+    {
+      "symbol": "PET",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-07-10",
+          "ex_date": null,
+          "event_type": "STOCK_DIVIDEND_AND_BONUS",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/924",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2023-08-10",
+          "ex_date": null,
+          "event_type": "STOCK_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/924",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ],
+      "vsdc_issuer_page": "https://vsdc.vn/vi/s-detail/924"
+    },
+    {
+      "symbol": "HPG",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-05-26",
+          "ex_date": null,
+          "event_type": "STOCK_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/1399",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2026-05-12",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/1399",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2025-06-27",
+          "ex_date": null,
+          "event_type": "STOCK_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/1399",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2024-05-24",
+          "ex_date": null,
+          "event_type": "BONUS_SHARES",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/1399",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ],
+      "vsdc_issuer_page": "https://vsdc.vn/vi/s-detail/1399"
+    },
+    {
+      "symbol": "DCM",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-07-10",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": 2000,
+          "source_url": "https://vsdc.vn/vi/ad1/197479",
+          "terms_status": "PARTIALLY_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ]
+    },
+    {
+      "symbol": "GMD",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "ex_date": "2026-10-07",
+          "event_type": "BONUS_SHARES",
+          "stock_ratio_new_per_old": 0.5,
+          "theoretical_prior_share_price_factor": 0.6666666666666666,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/ad1/200797",
+          "terms_status": "DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY",
+          "independent_price_evidence_file": "data/ds1_v2/independent_price_evidence_2026_10_15.json",
+          "price_reference_status": "PARTIAL_THIRD_PARTY_CORROBORATION",
+          "full_raw_adjusted_ohlcv_verified": false
+        },
+        {
+          "record_date": "2026-05-22",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": 2200,
+          "source_url": "https://vsdc.vn/vi/ad1/195501",
+          "terms_status": "PARTIALLY_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ]
+    },
+    {
+      "symbol": "PLX",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-08-05",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": 1200,
+          "source_url": "https://vsdc.vn/vi/ad/198519",
+          "terms_status": "PARTIALLY_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ]
+    },
+    {
+      "symbol": "ANV",
+      "review_status": "HISTORY_REVIEW_REQUIRED",
+      "events": []
+    },
+    {
+      "symbol": "VHC",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2025-09-30",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/874",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2024-02-20",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/874",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2024-01-05",
+          "ex_date": null,
+          "event_type": "STOCK_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/874",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ],
+      "vsdc_issuer_page": "https://vsdc.vn/vi/s-detail/874"
+    },
+    {
+      "symbol": "PHR",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-09-14",
+          "ex_date": null,
+          "event_type": "BONUS_SHARES_AND_CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/781",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ],
+      "vsdc_issuer_page": "https://vsdc.vn/vi/s-detail/781"
+    },
+    {
+      "symbol": "TCB",
+      "review_status": "PARTIAL_EVENTS_DOCUMENTED_ADJUSTMENT_UNVERIFIED",
+      "events": [
+        {
+          "record_date": "2026-05-20",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/4552",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2025-10-01",
+          "ex_date": null,
+          "event_type": "CASH_DIVIDEND",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/4552",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        },
+        {
+          "record_date": "2024-06-21",
+          "ex_date": null,
+          "event_type": "BONUS_SHARES",
+          "stock_ratio_new_per_old": null,
+          "cash_dividend_vnd": null,
+          "source_url": "https://vsdc.vn/vi/s-detail/4552",
+          "terms_status": "EVENT_TYPE_AND_RECORD_DATE_DOCUMENTED",
+          "adjustment_status": "UNVERIFIED",
+          "data_application": "NEVER_AUTO_APPLY"
+        }
+      ],
+      "vsdc_issuer_page": "https://vsdc.vn/vi/s-detail/4552"
+    },
+    {
+      "symbol": "GVR",
+      "review_status": "HISTORY_REVIEW_REQUIRED",
+      "events": []
+    }
+  ],
+  "calendar_exceptions": {
+    "BSR": [
+      {
+        "date": "2025-01-07",
+        "category": "KNOWN_VENUE_TRANSFER_NONTRADING",
+        "source_url": "https://www.bsr.com.vn/vi/w/3-1-t%E1%BB%B7-c%E1%BB%95-phi%E1%BA%BFu-bsr-ch%C3%ADnh-th%E1%BB%A9c-ni%C3%AAm-y%E1%BA%BFt-tr%C3%AAn-hose",
+        "review_status": "VENUE_TRANSFER_DOCUMENTED_DATE_GAP_PENDING_FINAL_REVIEW"
+      },
+      {
+        "date": "2025-01-08",
+        "category": "KNOWN_VENUE_TRANSFER_NONTRADING",
+        "source_url": "https://www.bsr.com.vn/vi/w/3-1-t%E1%BB%B7-c%E1%BB%95-phi%E1%BA%BFu-bsr-ch%C3%ADnh-th%E1%BB%A9c-ni%C3%AAm-y%E1%BA%BFt-tr%C3%AAn-hose",
+        "review_status": "VENUE_TRANSFER_DOCUMENTED_DATE_GAP_PENDING_FINAL_REVIEW"
+      },
+      {
+        "date": "2025-01-09",
+        "category": "KNOWN_VENUE_TRANSFER_NONTRADING",
+        "source_url": "https://www.bsr.com.vn/vi/w/3-1-t%E1%BB%B7-c%E1%BB%95-phi%E1%BA%BFu-bsr-ch%C3%ADnh-th%E1%BB%A9c-ni%C3%AAm-y%E1%BA%BFt-tr%C3%AAn-hose",
+        "review_status": "VENUE_TRANSFER_DOCUMENTED_DATE_GAP_PENDING_FINAL_REVIEW"
+      },
+      {
+        "date": "2025-01-10",
+        "category": "KNOWN_VENUE_TRANSFER_NONTRADING",
+        "source_url": "https://www.bsr.com.vn/vi/w/3-1-t%E1%BB%B7-c%E1%BB%95-phi%E1%BA%BFu-bsr-ch%C3%ADnh-th%E1%BB%A9c-ni%C3%AAm-y%E1%BA%BFt-tr%C3%AAn-hose",
+        "review_status": "VENUE_TRANSFER_DOCUMENTED_DATE_GAP_PENDING_FINAL_REVIEW"
+      },
+      {
+        "date": "2025-01-13",
+        "category": "KNOWN_VENUE_TRANSFER_NONTRADING",
+        "source_url": "https://www.bsr.com.vn/vi/w/3-1-t%E1%BB%B7-c%E1%BB%95-phi%E1%BA%BFu-bsr-ch%C3%ADnh-th%E1%BB%A9c-ni%C3%AAm-y%E1%BA%BFt-tr%C3%AAn-hose",
+        "review_status": "VENUE_TRANSFER_DOCUMENTED_DATE_GAP_PENDING_FINAL_REVIEW"
+      },
+      {
+        "date": "2025-01-14",
+        "category": "KNOWN_VENUE_TRANSFER_NONTRADING",
+        "source_url": "https://www.bsr.com.vn/vi/w/3-1-t%E1%BB%B7-c%E1%BB%95-phi%E1%BA%BFu-bsr-ch%C3%ADnh-th%E1%BB%A9c-ni%C3%AAm-y%E1%BA%BFt-tr%C3%AAn-hose",
+        "review_status": "VENUE_TRANSFER_DOCUMENTED_DATE_GAP_PENDING_FINAL_REVIEW"
+      },
+      {
+        "date": "2025-01-15",
+        "category": "KNOWN_VENUE_TRANSFER_NONTRADING",
+        "source_url": "https://www.bsr.com.vn/vi/w/3-1-t%E1%BB%B7-c%E1%BB%95-phi%E1%BA%BFu-bsr-ch%C3%ADnh-th%E1%BB%A9c-ni%C3%AAm-y%E1%BA%BFt-tr%C3%AAn-hose",
+        "review_status": "VENUE_TRANSFER_DOCUMENTED_DATE_GAP_PENDING_FINAL_REVIEW"
+      },
+      {
+        "date": "2025-01-16",
+        "category": "KNOWN_VENUE_TRANSFER_NONTRADING",
+        "source_url": "https://www.bsr.com.vn/vi/w/3-1-t%E1%BB%B7-c%E1%BB%95-phi%E1%BA%BFu-bsr-ch%C3%ADnh-th%E1%BB%A9c-ni%C3%AAm-y%E1%BA%BFt-tr%C3%AAn-hose",
+        "review_status": "VENUE_TRANSFER_DOCUMENTED_DATE_GAP_PENDING_FINAL_REVIEW"
+      }
+    ]
+  },
+  "benchmark_exceptions": [
+    {
+      "date": "2023-04-07",
+      "category": "EQUITY_BAR_ABSENT_VN30",
+      "review_status": "BENCHMARK_SOURCE_UNVERIFIED",
+      "source_url": null
+    },
+    {
+      "date": "2025-04-03",
+      "category": "EQUITY_BAR_ABSENT_VN30",
+      "review_status": "BENCHMARK_SOURCE_UNVERIFIED",
+      "source_url": null
+    }
+  ],
+  "adjustment_basis": {
+    "provider": "DNSE chart-api 1D",
+    "verified": false,
+    "mode": "UNKNOWN_POSSIBLY_BACK_ADJUSTED"
+  },
+  "methodology_note": "Record date (ngay dang ky cuoi cung) is not the same as ex-right date. Only use ex_date where independently substantiated. Historical 2023-2026 coverage is NOT complete."
+}
