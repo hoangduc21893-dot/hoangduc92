@@ -1,6 +1,6 @@
 import unittest
 from datetime import date
-from scripts.ds1_history_warehouse import windows,audit_series,corporate_action_flags
+from scripts.ds1_history_warehouse import windows,audit_series,corporate_action_flags,reconcile_calendar
 class WarehouseTests(unittest.TestCase):
  def test_windows_no_gaps(self):
   v=list(windows(date(2023,1,1),date(2023,12,31),150))
@@ -16,4 +16,18 @@ class WarehouseTests(unittest.TestCase):
   x=corporate_action_flags(bars)
   self.assertEqual(len(x),1)
   self.assertIn("UNVERIFIED",x[0]["status"])
+ def test_calendar_known_nontrading_without_filling_bars(self):
+  ledger={"calendar_exceptions":{"BSR":[{"date":"2025-01-07","category":"KNOWN_VENUE_TRANSFER_NONTRADING"}]},"benchmark_exceptions":[{"date":"2025-04-03"}]}
+  bars=[{"t":1736173200,"o":10,"h":11,"l":9,"c":10,"v":100}]
+  from datetime import datetime
+  from zoneinfo import ZoneInfo
+  tz=ZoneInfo("Asia/Ho_Chi_Minh")
+  known=datetime(2025,1,7,tzinfo=tz).date()
+  result=reconcile_calendar("BSR",bars,{known},ledger)
+  self.assertEqual(result["nontrading_exceptions"],["2025-01-07"])
+  self.assertEqual(result["unresolved_missing_sessions"],[])
+  self.assertEqual(len(bars),1)
+ def test_unresolved_nontrading_blocks(self):
+  result=reconcile_calendar("PVT",[],{date(2025,1,7)},{"calendar_exceptions":{},"benchmark_exceptions":[]})
+  self.assertEqual(result["unresolved_missing_sessions"],["2025-01-07"])
 if __name__=="__main__":unittest.main()
