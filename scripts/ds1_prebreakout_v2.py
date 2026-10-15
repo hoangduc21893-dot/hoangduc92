@@ -1,6 +1,6 @@
 """DS1 Pre-Breakout V2 research only. No orders, alerts, or production score changes."""
 from __future__ import annotations
-import json, argparse
+import json, argparse, math
 from datetime import datetime, date
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -20,9 +20,9 @@ def score_v2(daily, benchmark, *, sector_strength=None, market_regime=None):
     """Every score uses completed 1D bars only; unavailable benchmark blocks readiness."""
     if len(daily)<60 or len(benchmark)<60:
         return {"score":None,"status":"INSUFFICIENT_DATA","reasons":["need 60 complete daily bars"]}
-    if any(not all(k in b and isinstance(b[k],(float,int)) for k in ("o","h","l","c","v")) for b in daily[-60:]+benchmark[-60:]):
+    if any(not all(k in b and isinstance(b[k],(float,int)) and math.isfinite(b[k]) for k in ("o","h","l","c","v")) for b in daily[-60:]+benchmark[-60:]):
         return {"score":None,"status":"INVALID_DATA","reasons":["bad OHLCV"]}
-    if any(b["c"]<=0 or b["v"]<0 or b["h"]<max(b["o"],b["c"]) or b["l"]>min(b["o"],b["c"]) for b in daily[-60:]+benchmark[-60:]):
+    if any(min(b["o"],b["h"],b["l"],b["c"])<=0 or b["v"]<0 or b["h"]<max(b["o"],b["c"]) or b["l"]>min(b["o"],b["c"]) or b["h"]<b["l"] for b in daily[-60:]+benchmark[-60:]):
         return {"score":None,"status":"INVALID_DATA","reasons":["invalid prices or volume"]}
     c=[b["c"] for b in daily]; bc=[b["c"] for b in benchmark]
     ma20=mean(c[-20:]); ma50=mean(c[-50:]); close=c[-1]
@@ -64,16 +64,40 @@ def score_v2(daily, benchmark, *, sector_strength=None, market_regime=None):
         "liquidity20_vnd":round(liquidity_vnd),"volume_dryup":vol_dry,
         "range_contraction":range_contract,"close_location_avg":round(pressure,3)}}
 
+def validate_series(bars, end, symbol):
+    """Fail closed on stale, future, unsorted or duplicate trading dates before scoring."""
+    if not bars:
+        raise ValueError(f"{symbol}: EMPTY_HISTORY")
+    dates=[]
+    for bar in bars:
+        if "t" not in bar or not isinstance(bar["t"],(int,float)) or not math.isfinite(bar["t"]):
+            raise ValueError(f"{symbol}: INVALID_TIMESTAMP")
+        day=datetime.fromtimestamp(bar["t"],TZ).date()
+        if day>end: raise ValueError(f"{symbol}: FUTURE_BAR")
+        dates.append(day)
+    if any(a>=b for a,b in zip(dates,dates[1:])):
+        raise ValueError(f"{symbol}: DUPLICATE_OR_UNSORTED_DATES")
+    if dates[-1]!=end:
+        raise ValueError(f"{symbol}: TARGET_DATE_MISSING")
+    if len(bars)<60:
+        raise ValueError(f"{symbol}: INSUFFICIENT_HISTORY")
+    return bars
+
 def compare(symbols, asof, client):
     now=datetime.fromisoformat(asof+"T23:00:00").replace(tzinfo=TZ)
     end=date.fromisoformat(asof)
-    benchmark=[b for b in client.ohlcv("VN30","1D",now) if datetime.fromtimestamp(b["t"],TZ).date()<=end]
+    benchmark_error=None
+    try:
+        benchmark=validate_series(client.ohlcv("VN30","1D",now),end,"VN30")
+    except (ValueError,OverflowError) as exc:
+        benchmark=[]
+        benchmark_error=str(exc)
     results=[]
     for symbol in symbols:
         try:
-            daily=[b for b in client.ohlcv(symbol,"1D",now) if datetime.fromtimestamp(b["t"],TZ).date()<=end]
-            if not daily or datetime.fromtimestamp(daily[-1]["t"],TZ).date()!=end:
-                raise ValueError("TARGET_DATE_MISSING")
+            if benchmark_error:
+                raise ValueError(f"BENCHMARK_INVALID: {benchmark_error}")
+            daily=validate_series(client.ohlcv(symbol,"1D",now),end,symbol)
             v1=pre_breakout_rank(daily)
             v2=score_v2(daily,benchmark)
             if symbol in WATCH_RISK:
