@@ -102,10 +102,10 @@ jobs:
                   print('DS1_FIVE_CHECK '+json.dumps({'symbol':sym,'n':len(daily),'date':'2026-10-14','close':daily[-1]['c'],'low':daily[-1]['l'],'high':daily[-1]['h'],'volume':daily[-1]['v'],'ma20':ma20,'ma50':ma50,'pivot20':pivot,'volume_ratio':daily[-1]['v']/avgvol if avgvol else None,'rank':rank},ensure_ascii=False))
               except Exception as e: print('DS1_FIVE_CHECK_ERROR '+json.dumps({'symbol':sym,'reason':str(e)}))
           PY
-      - name: Historical warehouse feasibility VPB DCM VN30 (research only)
+      - name: Historical warehouse full DS1 expansion and raw action audit (research only)
         if: github.event_name == 'pull_request'
         continue-on-error: true
-        run: python -m scripts.ds1_history_warehouse --start 2023-01-01 --end 2026-10-14 --symbols VPB,DCM
+        run: python -m scripts.ds1_history_warehouse --start 2023-01-01 --end 2026-10-14
       - name: Upload history data QA
         if: always() && github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
