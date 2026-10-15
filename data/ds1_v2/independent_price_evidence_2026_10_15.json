@@ -1,0 +1,51 @@
+{
+  "asof": "2026-10-15",
+  "status": "PARTIAL_INDEPENDENT_VERIFICATION",
+  "evidence": [
+    {
+      "symbol": "GMD",
+      "ex_date": "2026-10-07",
+      "record_date": "2026-10-08",
+      "official_event_source": "https://vsdc.vn/vi/ad1/200797",
+      "ex_date_source": "https://www.bsc.com.vn/lich-su-kien/GMD_20261008_STOCK_DIV/",
+      "reference_source": "https://cophieu68.vn/quote/event_calc.php?id=gmd",
+      "last_raw_close_vnd": 78000,
+      "ex_reference_vnd": 52000,
+      "ratio": 0.5,
+      "pre_right_theoretical_factor": 0.6666666666666666,
+      "post_event_close_vnd": 54200,
+      "raw_full_ohlcv_verified": false,
+      "adjusted_full_ohlcv_verified": false,
+      "volume_factor_verified": false,
+      "dnse_basis_verified": false,
+      "status": "PARTIAL_PRICE_REFERENCE_MATCH"
+    },
+    {
+      "symbol": "HDB",
+      "ex_date": "2026-10-09",
+      "record_date": "2026-10-12",
+      "official_event_source": "https://vsdc.vn/vi/ad1/200896",
+      "historical_source": "https://web.stockbiz.vn/Stocks/HDB/LookupQuote.aspx?Date=09%2F10%2F2026",
+      "raw_previous_close_vnd": 28000,
+      "adjusted_previous_close_vnd": 21540,
+      "adjusted_previous_close_exact_vnd": 21538.46153846154,
+      "ratio": 0.3,
+      "pre_right_theoretical_factor": 0.7692307692307692,
+      "ex_day_raw_ohlcv": {
+        "open": 21650,
+        "high": 23050,
+        "low": 21350,
+        "close": 22400,
+        "volume": 44022500
+      },
+      "ex_day_raw_ohlcv_source": "https://web.stockbiz.vn/Stocks/HDB/LookupQuote.aspx?Date=09%2F10%2F2026",
+      "ex_reference_vnd": 21540,
+      "official_reference_verified": false,
+      "dnse_basis_verified": false,
+      "volume_factor_verified": false,
+      "status": "PARTIAL_PRICE_HISTORY_CORROBORATED"
+    }
+  ],
+  "limitations": "Third party price reference is not an official HOSE historical reference confirmation. DNSE raw and adjusted complete 1D OHLCV are not independently verified. No automatic back-adjustment permitted.",
+  "full_backtest_approved": false
+}
