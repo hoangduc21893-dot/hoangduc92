@@ -16,6 +16,8 @@ on:
       - 'scripts/ds1_history_warehouse.py'
       - 'test_ds1_history_warehouse.py'
       - 'scripts/ds1_corporate_action_gate.py'
+      - 'data/ds1_v2/corporate_action_ledger.json'
+      - 'scripts/ds1_corporate_action_gate.py'
       - 'test_ds1_corporate_action_gate.py'
       - 'data/ds1_v2/corporate_action_ledger.json'
       - '.github/workflows/ds1_dnse_eod.yml'
@@ -107,6 +109,16 @@ jobs:
           PY
       - name: Corporate action completeness gate (research)
         run: python -m scripts.ds1_corporate_action_gate
+      - name: Corporate action evidence gate (no price changes)
+        if: github.event_name == 'pull_request'
+        run: python -m scripts.ds1_corporate_action_gate
+      - name: Upload corporate action gate
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-rights-gate-${{ github.run_id }}
+          path: data/ds1_v2/corporate_action_gate.json
+          if-no-files-found: warn
       - name: Historical warehouse full DS1 expansion and raw action audit (research only)
         if: github.event_name == 'pull_request'
         continue-on-error: true
