@@ -16,11 +16,13 @@ on:
       - 'scripts/ds1_history_warehouse.py'
       - 'test_ds1_history_warehouse.py'
       - 'scripts/ds1_rights_reconciliation.py'
-      - 'test_ds1_rights_reconciliation test_ds1_independent_history test_ds1_ssi_fastconnect.py'
+      - 'test_ds1_rights_reconciliation test_ds1_independent_history test_ds1_ssi_fastconnect test_ds1_dnse_adjustment_audit.py'
       - 'scripts/ds1_independent_history.py'
       - 'test_ds1_independent_history.py'
       - 'scripts/ds1_ssi_fastconnect.py'
       - 'test_ds1_ssi_fastconnect.py'
+      - 'scripts/ds1_dnse_adjustment_audit.py'
+      - 'test_ds1_dnse_adjustment_audit.py'
       - 'scripts/ds1_corporate_action_gate.py'
       - 'data/ds1_v2/corporate_action_ledger.json'
       - 'scripts/ds1_corporate_action_gate.py'
@@ -139,6 +141,16 @@ jobs:
         if: github.event_name == 'pull_request'
         continue-on-error: true
         run: python -m scripts.ds1_history_warehouse --start 2023-01-01 --end 2026-10-14
+      - name: DNSE first rights adjustment boundary audit
+        if: github.event_name == 'pull_request'
+        run: python -m scripts.ds1_dnse_adjustment_audit
+      - name: Upload DNSE first rights audit
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds1-dnse-rights-${{ github.run_id }}
+          path: data/ds1_v2/dnse_rights_audit/
+          if-no-files-found: warn
       - name: Upload history data QA
         if: always() && github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4
