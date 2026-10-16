@@ -1,0 +1,59 @@
+name: DS1 DNSE Performance Collector
+on:
+  push:
+    paths: ['scripts/ds1_performance.py', 'test_ds1_performance.py', '.github/workflows/ds1_performance.yml']
+  pull_request:
+    paths: ['scripts/ds1_performance.py', 'test_ds1_performance.py', '.github/workflows/ds1_performance.yml']
+  schedule:
+    - cron: '10 9 * * 1-5' # 16:10 Vietnam; exchange calendar gate in collector
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Session YYYY-MM-DD; blank = latest completed'
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: ds1-performance-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install requests tzdata
+      - name: Unit and DS2 regression tests
+        run: python -m unittest -v test_ds1_performance test_ds2_eod
+      - name: Smoke 2026-10-16
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        run: python -m scripts.ds1_performance --date 2026-10-16
+      - name: Scheduled trading session gate
+        id: gate
+        if: github.event_name == 'schedule'
+        run: |
+          python -c "from scripts import ds2_eod as d; from datetime import datetime; import os; open(os.environ['GITHUB_OUTPUT'], 'a').write('trading=' + str(d.trading_day(datetime.now(d.ICT).date())).lower() + '\n')"
+      - name: Current completed performance
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && steps.gate.outputs.trading == 'true')
+        env:
+          REPORT_DATE: ${{ inputs.date }}
+        run: |
+          if [ -n "$REPORT_DATE" ]; then
+            python -m scripts.ds1_performance --date "$REPORT_DATE"
+          else
+            python -m scripts.ds1_performance
+          fi
+      - name: Job summary
+        if: always()
+        run: test ! -f data/ds1_performance/report.md || cat data/ds1_performance/report.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ds1-performance-${{ github.run_id }}
+          path: data/ds1_performance/
+          if-no-files-found: warn
+          retention-days: 90
