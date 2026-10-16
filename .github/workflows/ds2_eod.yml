@@ -7,6 +7,11 @@ on:
   schedule:
     - cron: '10 9 * * 1-5' # 16:10 ICT; runtime exchange holiday gate
   workflow_dispatch:
+    inputs:
+      date:
+        description: 'Session date (YYYY-MM-DD); empty uses current ICT date'
+        required: false
+        type: string
 permissions:
   contents: read
 concurrency:
@@ -29,7 +34,14 @@ jobs:
         run: python -m scripts.ds2_eod --date 2026-10-15
       - name: Current session closed EOD
         if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-        run: python -m scripts.ds2_eod
+        env:
+          DS2_DATE: ${{ inputs.date }}
+        run: |
+          if [ -n "$DS2_DATE" ]; then
+            python -m scripts.ds2_eod --date "$DS2_DATE"
+          else
+            python -m scripts.ds2_eod
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
