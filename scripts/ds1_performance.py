@@ -215,7 +215,7 @@ def publish(output, report, stage):
         temp.replace(output / (stem + '.' + ext))
     manifest = {}
     for path in sorted([*evidence.glob('*.json'), *output.glob(stem + '.*')]):
-        manifest[str(path.relative_to(output))] = hashlib.sha256(path.read_bytes()).hexdigest()
+        manifest[path.relative_to(output).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
     (output / (stem + '.sha256.json')).write_text(json.dumps(manifest, indent=2), encoding='utf-8')
     return True
 

@@ -42,7 +42,7 @@ replace them. Failed attempts write diagnostics, never overwrite dated results.
 Interrupted/orphan bundles fail closed for manual review. JSON is the completion
 marker. Artifact upload always runs, retention 90 days.
 
-Only schedule/manual runs on main commit report data using GITHUB_TOKEN with
+Schedule/manual runs and collector deployments on main commit report data using GITHUB_TOKEN with
 contents:write; no extra secret needed. Non-fast-forward pushes fetch/rebase and
 retry four times, never force. Content conflicts stop safely with artifacts.
 PR/push runs only test and fetch historical smoke data to work/ds1-smoke.
