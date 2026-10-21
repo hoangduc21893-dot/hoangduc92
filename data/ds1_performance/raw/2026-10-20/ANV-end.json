@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-10-20",
+  "symbol": "ANV",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-10-21T20:06:53.092960+07:00",
+  "payload_sha256": "e25f235075c119be2bfb5b62b11003ac64615b170f14d27cf7902d95d559885d",
+  "payload": {
+    "t": [
+      1792461600
+    ],
+    "o": [
+      18.85
+    ],
+    "h": [
+      19.4
+    ],
+    "l": [
+      18.8
+    ],
+    "c": [
+      18.9
+    ],
+    "v": [
+      1347400
+    ],
+    "nextTime": 0
+  }
+}

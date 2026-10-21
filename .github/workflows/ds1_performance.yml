@@ -45,7 +45,7 @@ jobs:
           python -c "from scripts import ds2_eod as d; from datetime import datetime; import os; open(os.environ['GITHUB_OUTPUT'], 'a').write('trading=' + str(d.trading_day(datetime.now(d.ICT).date())).lower() + '\n')"
       - name: Collect completed performance
         id: collect
-        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && steps.gate.outputs.trading == 'true')
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'schedule' && steps.gate.outputs.trading == 'true')
         env:
           REPORT_DATE: ${{ inputs.date }}
         run: |
