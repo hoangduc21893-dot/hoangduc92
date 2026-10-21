@@ -1,41 +1,51 @@
 # DS1 DNSE Performance Collector
 
-Read-only, separate from all trading and Telegram workflows. Runs at 09:10 UTC
-(16:10 Vietnam), weekdays with the existing DS2 2026 exchange calendar gate.
-GitHub schedules may start late. Unknown calendar years fail closed.
+Isolated report collector; no trading, orders, broker credentials or Telegram imports.
+Schedule: `45 9 * * 1-5` UTC = 16:45 ICT. GitHub may delay scheduled starts.
+The 2026 HOSE/HNX/UPCoM exchange holiday gate rejects weekends and holidays;
+unknown years fail closed and require a reviewed calendar update before 2027.
+Calendar sources:
+- https://www.hsx.vn/vi/tin-tuc/hose-thong-bao-lich-nghi-giao-dich-nam-2026/2437411
+- https://cms.hnx.vn/vi-vn/chi-tiet-lich-nghi-gd-60021971.html?_page=1
 
-Run: `python -m scripts.ds1_performance --date 2026-10-16`.
-Omit date for latest completed exchange session (16:10 local cutoff).
-All entries use the closing DNSE stock 1D bar of the configured session;
-non-trading entry dates advance to the next exchange session. 10 October becomes
-12 October 2026. T+ counts exchange sessions strictly after entry, entry = T+0;
-it is an elapsed-session measure, not settlement availability.
+Manual/backfill: Actions > DS1 DNSE Performance Collector > Run workflow, main,
+`date=YYYY-MM-DD`. Blank selects latest completed session at 16:45 ICT.
+CLI: `python -m scripts.ds1_performance --date 2026-10-20`.
+Entry dates are in GROUPS; non-session entries advance to the next trading day.
+T+ is elapsed trading sessions after entry, entry=T+0, not settlement availability.
 
-Reuses DS2 transport, calendar, exact-date OHLCV validation and thousand-VND
-conversion. Each response is archived with query session, collection timestamp,
-source and SHA256. No forward fill, nearest-bar lookup or substitute feed.
-Failures retain diagnostic JSON, CSV, Markdown and available raw responses.
-Old output is cleared before reruns. Missing or inconsistent data exits nonzero.
+DNSE chart stock 1D is the only price source. Exact target date and 09:00 ICT
+bar timestamp, OHLC bounds, finite numeric values, positive integer volume,
+and explicit thousand-VND to VND scaling are validated. No fill or fake prices.
+Transport: 5 attempts, bounded exponential backoff with jitter, Retry-After
+seconds (capped at 120s), connect/read timeouts 5/20s. HTTP/JSON errors fail.
 
-The DNSE chart response alone does not prove adjustment basis. Prices may be
-reported as validated observations while returns, outcomes and portfolio
-statistics remain null. HDB and GMD always carry corporate-action warnings.
-No dividend/share multiplier is ever applied by this code.
+20/20 prices with unverified adjustment basis is successful PRICE_VALIDATED
+with a warning and RETURNS_UNVERIFIED. Reference ranking, arithmetic equal-weight
+price movement and up/down/flat counts are labeled reference only. Verified
+return/outcome statistics stay null unless independent evidence is bound to the
+exact start/end payload hashes. Historical entry closes are fetched now, not
+archived original entry prices. No manual corporate-action adjustment is applied.
+HDB/GMD and every other symbol have UNVERIFIED corporate-action audit status.
+Issuer disclosures do not establish the chart endpoint's adjustment basis;
+never double adjust or infer absence of corporate actions from a smooth price.
+Evidence schema remains: symbol -> source, resolution=1D, start, end,
+payload_sha256 ordered start/end hashes, basis=same_adjusted_basis,
+evidence_url HTTPS, reviewed_by, explanation. The program checks evidence
+binding, not documentary truth. No such evidence is bundled as verified.
 
-For independently reviewed evidence, pass `--basis-evidence evidence.json`.
-Each symbol must map to source (exact endpoint), resolution `1D`, start/end ISO
-dates, payload_sha256 (ordered start/end response digests), basis
-`same_adjusted_basis`, evidence_url (HTTPS supporting document), reviewed_by and
-explanation. The reviewer must establish that both observed closes are on the
-same adjusted basis, including HDB/GMD actions; the program validates binding
-and fields, not the truth of the external document. Do not fabricate evidence.
-No evidence file is supplied or implicitly trusted. A BLOCKED smoke is expected
-until evidence exists; it must not be relabeled as verified.
+Outputs: data/ds1_performance/report_YYYY-MM-DD.{json,md,csv},
+report_YYYY-MM-DD.sha256.json and raw/YYYY-MM-DD/*.json (40 responses).
+Payload digest is canonical sorted JSON UTF-8; the manifest hashes actual files.
+Dated valid bundles are immutable; reruns verify all manifest hashes and do not
+replace them. Failed attempts write diagnostics, never overwrite dated results.
+Interrupted/orphan bundles fail closed for manual review. JSON is the completion
+marker. Artifact upload always runs, retention 90 days.
 
-Only 20/20 validated prices AND bound basis evidence release equal-weight mean,
-win/loss/flat counts and top/bottom three. Return = (end/start - 1)*100,
-close-to-close price return, excluding fees, taxes and cash dividends. This is
-not a cash-flow or total-return portfolio valuation.
-
-Artifacts: report.json, report.csv, report.md, raw/*.json. Unit tests use synthetic
-fixtures only; fixture values are not market evidence.
+Only schedule/manual runs on main commit report data using GITHUB_TOKEN with
+contents:write; no extra secret needed. Non-fast-forward pushes fetch/rebase and
+retry four times, never force. Content conflicts stop safely with artifacts.
+PR/push runs only test and fetch historical smoke data to work/ds1-smoke.
+Merging activates this collector; existing trading workflows remain unchanged.
+A configured cron is not proof of execution: check an Actions run with event
+schedule and its report commit. This deployment cannot claim that before it occurs.
