@@ -1,0 +1,21 @@
+﻿symbol,added_date,start_date,end_date,start_close_vnd,end_close_vnd,t_plus,reference_rank,reference_change_pct,returns_status,return_pct,outcome,verified,warning,error
+PVT,2026-09-22,2026-09-22,2026-10-21,24100,23000,21,16,-4.564315352697095,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+MSB,2026-09-22,2026-09-22,2026-10-21,13500,15550,21,2,15.185185185185185,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+HAH,2026-09-22,2026-09-22,2026-10-21,48300,50700,21,5,4.968944099378882,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+BSR,2026-09-22,2026-09-22,2026-10-21,31350,28100,21,20,-10.36682615629984,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+VGC,2026-09-22,2026-09-22,2026-10-21,41000,44600,21,3,8.78048780487805,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+PET,2026-09-22,2026-09-22,2026-10-21,41500,49950,21,1,20.36144578313253,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+DHC,2026-09-23,2026-09-23,2026-10-21,37810,38800,20,8,2.6183549325575246,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+MWG,2026-09-25,2026-09-25,2026-10-21,72430,75800,18,6,4.652768189976529,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+PVS,2026-09-29,2026-09-29,2026-10-21,34100,31800,16,19,-6.744868035190616,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+HDB,2026-10-02,2026-10-02,2026-10-21,21880,22100,13,12,1.0054844606946984,RETURNS_UNVERIFIED,,,False,Review corporate actions: no manual adjustment,adjustment basis unverified: return withheld
+VPB,2026-10-05,2026-10-05,2026-10-21,23000,24000,12,7,4.3478260869565215,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+PLX,2026-10-08,2026-10-08,2026-10-21,37600,35150,9,18,-6.51595744680851,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+ANV,2026-10-08,2026-10-08,2026-10-21,18650,18350,9,14,-1.6085790884718498,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+VHC,2026-10-08,2026-10-08,2026-10-21,53000,51800,9,15,-2.2641509433962264,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+GVR,2026-10-08,2026-10-08,2026-10-21,33850,31800,9,17,-6.056129985228951,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+PHR,2026-10-10,2026-10-12,2026-10-21,32850,32700,7,13,-0.45662100456621,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+DCM,2026-10-10,2026-10-12,2026-10-21,33750,34350,7,10,1.7777777777777777,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+GMD,2026-10-10,2026-10-12,2026-10-21,54100,55000,7,11,1.6635859519408502,RETURNS_UNVERIFIED,,,False,Review corporate actions: no manual adjustment,adjustment basis unverified: return withheld
+HPG,2026-10-10,2026-10-12,2026-10-21,20700,21150,7,9,2.1739130434782608,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+TCB,2026-10-10,2026-10-12,2026-10-21,32600,34400,7,4,5.521472392638037,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
