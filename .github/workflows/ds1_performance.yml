@@ -1,9 +1,9 @@
 name: DS1 DNSE Performance Collector
 on:
   push:
-    paths: ['scripts/ds1_performance.py', 'test_ds1_performance.py', '.github/workflows/ds1_performance.yml']
+    paths: ['scripts/ds1_performance.py', 'scripts/ds1_universe.py', 'test_ds1_universe.py', 'test_ds1_performance.py', '.github/workflows/ds1_performance.yml']
   pull_request:
-    paths: ['scripts/ds1_performance.py', 'test_ds1_performance.py', '.github/workflows/ds1_performance.yml']
+    paths: ['scripts/ds1_performance.py', 'scripts/ds1_universe.py', 'test_ds1_universe.py', 'test_ds1_performance.py', '.github/workflows/ds1_performance.yml']
   schedule:
     - cron: '45 9 * * 1-5' # 16:45 ICT (UTC+7); holiday gate below
   workflow_dispatch:
@@ -34,7 +34,7 @@ jobs:
           python-version: '3.11'
       - run: python -m pip install requests tzdata
       - name: Unit and DS2 regression tests
-        run: python -m unittest -v test_ds1_performance test_ds2_eod
+        run: python -m unittest -v test_ds1_performance test_ds2_eod test_ds1_universe
       - name: Historical live integration (read only)
         if: github.event_name == 'push' || github.event_name == 'pull_request'
         run: python -m scripts.ds1_performance --date 2026-10-16 --output work/ds1-smoke

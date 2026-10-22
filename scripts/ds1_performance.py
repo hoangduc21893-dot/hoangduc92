@@ -13,6 +13,7 @@ from decimal import Decimal
 from pathlib import Path
 import requests
 from scripts import ds2_eod as eod
+from scripts.ds1_universe import annotate_performance
 
 GROUPS = {
     '2026-09-22': 'PVT MSB HAH BSR VGC PET', '2026-09-23': 'DHC',
@@ -143,7 +144,7 @@ def collect(day, now, session, output, evidence=None):
     reference = sorted(rows, key=lambda r: (-r.get('reference_change_pct', 0), r['symbol'])) if prices_complete else []
     for rank, row in enumerate(reference, 1):
         row['reference_rank'] = rank
-    return dict(status='VERIFIED' if complete else 'PRICE_VALIDATED' if prices_complete else 'BLOCKED',
+    report = dict(status='VERIFIED' if complete else 'PRICE_VALIDATED' if prices_complete else 'BLOCKED',
         returns_status='VERIFIED' if complete else 'RETURNS_UNVERIFIED',
         reference_equal_weight_change_pct=sum(r['reference_change_pct'] for r in rows)/20 if prices_complete else None,
         reference_up=sum(r['reference_change_pct'] > 0 for r in rows) if prices_complete else None,
@@ -162,10 +163,11 @@ def collect(day, now, session, output, evidence=None):
         losses=sum(r['outcome']=='LOSS' for r in rows) if complete else None,
         flats=sum(r['outcome']=='FLAT' for r in rows) if complete else None,
         top=[r['symbol'] for r in ranked[-3:][::-1]], bottom=[r['symbol'] for r in ranked[:3]], rows=rows)
+    return annotate_performance(report, day)
 
 def write_report(output, report):
     (output / 'report.json').write_text(json.dumps(report, indent=2, allow_nan=False), encoding='utf-8')
-    fields = ['symbol','added_date','start_date','end_date','start_close_vnd','end_close_vnd','t_plus','reference_rank','reference_change_pct','returns_status','return_pct','outcome','verified','warning','error']
+    fields = ['symbol','list_membership','added_date','start_date','end_date','start_close_vnd','end_close_vnd','t_plus','reference_rank','reference_change_pct','returns_status','return_pct','outcome','verified','warning','error']
     with (output / 'report.csv').open('w', newline='', encoding='utf-8-sig') as f:
         writer = csv.DictWriter(f, fieldnames=fields, extrasaction='ignore')
         writer.writeheader()
@@ -176,9 +178,15 @@ def write_report(output, report):
              f"Returns: {report.get('returns_status')}. Reference equal-weight: {report.get('reference_equal_weight_change_pct')}%; up/down/flat: {report.get('reference_up')}/{report.get('reference_down')}/{report.get('reference_flat')}.",
              'Reference change is observed price movement, not verified investment or total return. Historical prices may already be adjusted.',
              '|Symbol|Entry|Start VND|End VND|T+|Rank|Reference %|Returns status|Return %|Error|', '|---|---|---:|---:|---:|---:|---:|---|---:|---|']
+    lines.insert(2, 'Scope: all original entries including archives; this 20-name total is not the active-list return.')
+    for name, cohort in report.get('cohorts', {}).items():
+        lines.insert(3, f"{name}: {cohort['count']} symbols; reference equal-weight {cohort['reference_equal_weight_change_pct']}%; up/down/flat {cohort['reference_up']}/{cohort['reference_down']}/{cohort['reference_flat']}.")
+    lines.insert(3, 'Archived from next session: BSR and GVR, 2026-10-23; original entry dates and prices retained.')
+    lines[-2] = lines[-2].replace('|Symbol|Entry|', '|Symbol|List|Entry|')
+    lines[-1] = lines[-1] + '---|'
     for r in sorted(report.get('rows', []), key=lambda r: r.get('reference_rank', 999)):
         lines.append('|'+ '|'.join(str(r.get(k)) if r.get(k) is not None else 'N/A' for k in
-            ['symbol','start_date','start_close_vnd','end_close_vnd','t_plus','reference_rank','reference_change_pct','returns_status','return_pct','error'])+'|')
+            ['symbol','list_membership','start_date','start_close_vnd','end_close_vnd','t_plus','reference_rank','reference_change_pct','returns_status','return_pct','error'])+'|')
     if report.get('error'):
         lines.append(report['error'])
     (output/'report.md').write_text('\n'.join(lines), encoding='utf-8')
