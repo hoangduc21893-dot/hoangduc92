@@ -1,0 +1,33 @@
+test_invalid_payloads (test_s4_eod_research.ResearchTests.test_invalid_payloads) ... ok
+test_live_evidence_reproduces (test_s4_eod_research.ResearchTests.test_live_evidence_reproduces) ... ok
+test_no_benchmark_not_zero_rs (test_s4_eod_research.ResearchTests.test_no_benchmark_not_zero_rs) ... ok
+test_units_flat_indicators_rs (test_s4_eod_research.ResearchTests.test_units_flat_indicators_rs) ... ok
+test_volume_excludes_current_and_s4_conflict (test_s4_eod_research.ResearchTests.test_volume_excludes_current_and_s4_conflict) ... ok
+test_wilder_known (test_s4_eod_research.ResearchTests.test_wilder_known) ... ok
+test_calendar (test_ds2_eod.DS2Tests.test_calendar) ... ok
+test_eod_clock (test_ds2_eod.DS2Tests.test_eod_clock) ... ok
+test_http_json_and_recovery (test_ds2_eod.DS2Tests.test_http_json_and_recovery) ... ok
+test_nav_pnl (test_ds2_eod.DS2Tests.test_nav_pnl) ... ok
+test_partial_failure_blocks_nav (test_ds2_eod.DS2Tests.test_partial_failure_blocks_nav) ... ok
+test_reject_invalid_payloads (test_ds2_eod.DS2Tests.test_reject_invalid_payloads) ... ok
+test_scaling_and_target_date (test_ds2_eod.DS2Tests.test_scaling_and_target_date) ... ok
+test_transport (test_ds2_eod.DS2Tests.test_transport) ... ok
+test_basis_blocks_all_statistics (test_ds1_performance.PerformanceTests.test_basis_blocks_all_statistics) ... ok
+test_config_calendar (test_ds1_performance.PerformanceTests.test_config_calendar) ... ok
+test_latest (test_ds1_performance.PerformanceTests.test_latest) ... ok
+test_missing_data_and_clock (test_ds1_performance.PerformanceTests.test_missing_data_and_clock) ... ok
+test_verified_and_tamper (test_ds1_performance.PerformanceTests.test_verified_and_tamper) ... ok
+test_immutable_and_tamper (test_ds1_performance.SafetyTests.test_immutable_and_tamper) ... ok
+test_rate_limit_recovery_and_timeout (test_ds1_performance.SafetyTests.test_rate_limit_recovery_and_timeout) ... ok
+test_timestamp_and_cutoff (test_ds1_performance.SafetyTests.test_timestamp_and_cutoff) ... ok
+test_out_of_session_writes_snapshot_without_fetch (test_ds1_snapshot.SnapshotTests.test_out_of_session_writes_snapshot_without_fetch) ... ok
+test_snapshot_bar_has_timezone_and_ohlcv (test_ds1_snapshot.SnapshotTests.test_snapshot_bar_has_timezone_and_ohlcv) ... ok
+test_vn30_uses_index_endpoint_and_stock_uses_stock_endpoint (test_ds1_snapshot.SnapshotTests.test_vn30_uses_index_endpoint_and_stock_uses_stock_endpoint) ... ok
+test_write_snapshot_replaces_previous_value (test_ds1_snapshot.SnapshotTests.test_write_snapshot_replaces_previous_value) ... ok
+test_hard_gate_blocks_paper_candidate (test_ds1_paper_watch.WatchTests.test_hard_gate_blocks_paper_candidate) ... ok
+test_paper_candidate_is_not_buy (test_ds1_paper_watch.WatchTests.test_paper_candidate_is_not_buy) ... ok
+
+----------------------------------------------------------------------
+Ran 28 tests in 0.918s
+
+OK

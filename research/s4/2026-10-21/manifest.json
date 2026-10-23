@@ -1,0 +1,15 @@
+{
+  "evidence/KDH.json": "1d3e02299094a5aa68ce8f7e1164f891cf24b749215241ebe5eeecd868ab299a",
+  "evidence/NLG.json": "03184ddbfbd05fd66e647dc4798a7087dbf2d0ce50e8b519f4d390997c9ff593",
+  "evidence/rights-sources.json": "97bf5ee260382c6bbe758d6389c05c08e9958b9dc61a04ac4a8df0ec34161bb7",
+  "evidence/ssi-ir.html": "464a4372c93e3a94acfb349133fd7954969d97362874608e6df9ec99d5efecea",
+  "evidence/SSI.json": "232932a5eb89ae3962c8c3e2525d66d1a85e8dae5b85dd21d853beac7f32ce90",
+  "evidence/TPB.json": "34119e35adbfb1671e42c912ca2bca2319b00388371647d13142ce5d33d589a2",
+  "evidence/VCI.json": "eaf13d3380c58f9d8e364bd0666abfe679f180a6d62b832b32a6c8846ea2229b",
+  "evidence/VNINDEX.json": "c14be799b3741b1708a3403567c9c2b1f0cdb95c2281df88547150a5d51e6edc",
+  "report.json": "0fc746314c4cd38d9e1a3830499683b385e66245d44d78ef7f95bac059b13967",
+  "report.md": "a6edcaa7aaa62afb93e4f91b0a38c4a190f95ee6efba737389597dc1fe8045e8",
+  "rights-review.md": "1d0030a00c1ab86dd0ea49ef97adc61180827ba20979d19311d055fd754666cb",
+  "run.json": "4d9d1849766ea64bb99f18861b12433de0baa4ba4ad46b0a11bf3e19f8de7f84",
+  "tests.txt": "0ea30dc5224a88e620d8814bb896fd91e22ff1180bd704695e3f4e9b90241d0a"
+}

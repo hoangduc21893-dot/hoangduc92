@@ -1,0 +1,355 @@
+{
+  "as_of": "2026-10-21",
+  "collected_at": "2026-10-21T21:00:58.238576+07:00",
+  "benchmark": "VNINDEX",
+  "ranking_basis": "provisional raw-provider technical score; not eligibility rank",
+  "corporate_actions": {
+    "status": "UNVERIFIED",
+    "adjustment_applied": false,
+    "note": "Chart payload has no adjustment metadata. Search is not a complete rights calendar. No inferred or double adjustment. All metrics provisional on provider basis."
+  },
+  "thresholds": {
+    "watch_score_min": 80,
+    "volume_ratio_min": 1.5
+  },
+  "strategy_note": "Literal repo S4 daily contraction <=1.10*inclusive ADV20 retained; user volume >=1.5*prior ADV20 retained. These same-day gates are incompatible. Intraday confirmation is outside this 1D WATCH audit, never claimed.",
+  "benchmark_eod": {
+    "t": 1792548000,
+    "date": "2026-10-21",
+    "o": 1696.77,
+    "h": 1738.91,
+    "l": 1695.95,
+    "c": 1738.67,
+    "v": 895803904
+  },
+  "rows": [
+    {
+      "symbol": "KDH",
+      "rank": 1,
+      "close_vnd": 14850.0,
+      "eod_timestamp": 1792548000,
+      "eod_ict": "2026-10-21T09:00:00+07:00",
+      "distance_ma20_pct": 7.2821846553966285,
+      "ma20_vnd": 13842.0,
+      "ma50_vnd": 14907.8,
+      "rsi14_wilder": 62.06820233485871,
+      "rs20_fraction": 0.06549119625923905,
+      "atr14_wilder_vnd": 450.4933756322826,
+      "atr14_pct": 3.0336254251332164,
+      "volume_shares": 10272700,
+      "adv20_prior_shares": 3755140.0,
+      "volume_ratio": 2.7356370201909916,
+      "avg20_daily_close_times_volume_vnd": 57166282550.0,
+      "liquidity_note": "close*volume proxy, not actual turnover; no liquidity gate supplied",
+      "pivot_prior20_high_vnd": 14590.0,
+      "base_prior20_low_vnd": 13000,
+      "score": 50,
+      "score_components": {
+        "trend": 0,
+        "pullback": 0,
+        "reversal": 20,
+        "volume": 15,
+        "relative_strength": 15
+      },
+      "gates": {
+        "ma20_above_ma50": false,
+        "near_ma20_1_5pct": false,
+        "bullish_body": true,
+        "higher_close": true,
+        "s4_volume_contraction": false,
+        "required_volume_ratio_1_5": true,
+        "watch_score_80": false
+      },
+      "technical_failures": [
+        "ma20_above_ma50",
+        "near_ma20_1_5pct",
+        "s4_volume_contraction",
+        "watch_score_80"
+      ],
+      "status": "FAIL",
+      "blockers": [
+        "corporate-action calendar and provider adjustment basis not certified"
+      ],
+      "large_gaps_gt7pct": []
+    },
+    {
+      "symbol": "TPB",
+      "rank": 2,
+      "close_vnd": 12650.0,
+      "eod_timestamp": 1792548000,
+      "eod_ict": "2026-10-21T09:00:00+07:00",
+      "distance_ma20_pct": 5.888754028376519,
+      "ma20_vnd": 11946.5,
+      "ma50_vnd": 12049.2,
+      "rsi14_wilder": 68.66746954494212,
+      "rs20_fraction": 0.05676621506573554,
+      "atr14_wilder_vnd": 320.8942666908971,
+      "atr14_pct": 2.5367135706790283,
+      "volume_shares": 26917500,
+      "adv20_prior_shares": 10333220.0,
+      "volume_ratio": 2.604947925235309,
+      "avg20_daily_close_times_volume_vnd": 123667498800.0,
+      "liquidity_note": "close*volume proxy, not actual turnover; no liquidity gate supplied",
+      "pivot_prior20_high_vnd": 12460.0,
+      "base_prior20_low_vnd": 11250.0,
+      "score": 50,
+      "score_components": {
+        "trend": 0,
+        "pullback": 0,
+        "reversal": 20,
+        "volume": 15,
+        "relative_strength": 15
+      },
+      "gates": {
+        "ma20_above_ma50": false,
+        "near_ma20_1_5pct": false,
+        "bullish_body": true,
+        "higher_close": true,
+        "s4_volume_contraction": false,
+        "required_volume_ratio_1_5": true,
+        "watch_score_80": false
+      },
+      "technical_failures": [
+        "ma20_above_ma50",
+        "near_ma20_1_5pct",
+        "s4_volume_contraction",
+        "watch_score_80"
+      ],
+      "status": "FAIL",
+      "blockers": [
+        "corporate-action calendar and provider adjustment basis not certified"
+      ],
+      "large_gaps_gt7pct": []
+    },
+    {
+      "symbol": "NLG",
+      "rank": 3,
+      "close_vnd": 22850.0,
+      "eod_timestamp": 1792548000,
+      "eod_ict": "2026-10-21T09:00:00+07:00",
+      "distance_ma20_pct": 4.792478789268517,
+      "ma20_vnd": 21805.0,
+      "ma50_vnd": 23094.0,
+      "rsi14_wilder": 57.17854577669743,
+      "rs20_fraction": 0.019870638217649117,
+      "atr14_wilder_vnd": 631.7503742404002,
+      "atr14_pct": 2.7647718785137863,
+      "volume_shares": 2765500,
+      "adv20_prior_shares": 1401430.0,
+      "volume_ratio": 1.973341515452074,
+      "avg20_daily_close_times_volume_vnd": 31644400750.0,
+      "liquidity_note": "close*volume proxy, not actual turnover; no liquidity gate supplied",
+      "pivot_prior20_high_vnd": 23900.0,
+      "base_prior20_low_vnd": 21000,
+      "score": 40,
+      "score_components": {
+        "trend": 0,
+        "pullback": 0,
+        "reversal": 20,
+        "volume": 15,
+        "relative_strength": 5
+      },
+      "gates": {
+        "ma20_above_ma50": false,
+        "near_ma20_1_5pct": false,
+        "bullish_body": true,
+        "higher_close": true,
+        "s4_volume_contraction": false,
+        "required_volume_ratio_1_5": true,
+        "watch_score_80": false
+      },
+      "technical_failures": [
+        "ma20_above_ma50",
+        "near_ma20_1_5pct",
+        "s4_volume_contraction",
+        "watch_score_80"
+      ],
+      "status": "FAIL",
+      "blockers": [
+        "corporate-action calendar and provider adjustment basis not certified"
+      ],
+      "large_gaps_gt7pct": []
+    },
+    {
+      "symbol": "SSI",
+      "rank": 4,
+      "close_vnd": 20400.0,
+      "eod_timestamp": 1792548000,
+      "eod_ict": "2026-10-21T09:00:00+07:00",
+      "distance_ma20_pct": 3.3958438925494105,
+      "ma20_vnd": 19730.0,
+      "ma50_vnd": 20260.8,
+      "rsi14_wilder": 58.92436352181486,
+      "rs20_fraction": 0.013374111301251213,
+      "atr14_wilder_vnd": 521.1908716297785,
+      "atr14_pct": 2.5548572138714634,
+      "volume_shares": 31771600,
+      "adv20_prior_shares": 18687685.0,
+      "volume_ratio": 1.7001356775866032,
+      "avg20_daily_close_times_volume_vnd": 385609154500.0,
+      "liquidity_note": "close*volume proxy, not actual turnover; no liquidity gate supplied",
+      "pivot_prior20_high_vnd": 21200.0,
+      "base_prior20_low_vnd": 18650.0,
+      "score": 40,
+      "score_components": {
+        "trend": 0,
+        "pullback": 0,
+        "reversal": 20,
+        "volume": 15,
+        "relative_strength": 5
+      },
+      "gates": {
+        "ma20_above_ma50": false,
+        "near_ma20_1_5pct": false,
+        "bullish_body": true,
+        "higher_close": true,
+        "s4_volume_contraction": false,
+        "required_volume_ratio_1_5": true,
+        "watch_score_80": false
+      },
+      "technical_failures": [
+        "ma20_above_ma50",
+        "near_ma20_1_5pct",
+        "s4_volume_contraction",
+        "watch_score_80"
+      ],
+      "status": "FAIL",
+      "blockers": [
+        "corporate-action calendar and provider adjustment basis not certified"
+      ],
+      "large_gaps_gt7pct": []
+    },
+    {
+      "symbol": "VCI",
+      "rank": 5,
+      "close_vnd": 19700.0,
+      "eod_timestamp": 1792548000,
+      "eod_ict": "2026-10-21T09:00:00+07:00",
+      "distance_ma20_pct": 3.2765399737876733,
+      "ma20_vnd": 19075.0,
+      "ma50_vnd": 20411.0,
+      "rsi14_wilder": 53.218835867043566,
+      "rs20_fraction": 0.010204369866676055,
+      "atr14_wilder_vnd": 655.6231890291048,
+      "atr14_pct": 3.3280364925335273,
+      "volume_shares": 11227400,
+      "adv20_prior_shares": 7710745.0,
+      "volume_ratio": 1.4560720137937384,
+      "avg20_daily_close_times_volume_vnd": 151643739750.0,
+      "liquidity_note": "close*volume proxy, not actual turnover; no liquidity gate supplied",
+      "pivot_prior20_high_vnd": 20600.0,
+      "base_prior20_low_vnd": 18050.0,
+      "score": 25,
+      "score_components": {
+        "trend": 0,
+        "pullback": 0,
+        "reversal": 20,
+        "volume": 0,
+        "relative_strength": 5
+      },
+      "gates": {
+        "ma20_above_ma50": false,
+        "near_ma20_1_5pct": false,
+        "bullish_body": true,
+        "higher_close": true,
+        "s4_volume_contraction": false,
+        "required_volume_ratio_1_5": false,
+        "watch_score_80": false
+      },
+      "technical_failures": [
+        "ma20_above_ma50",
+        "near_ma20_1_5pct",
+        "s4_volume_contraction",
+        "required_volume_ratio_1_5",
+        "watch_score_80"
+      ],
+      "status": "FAIL",
+      "blockers": [
+        "corporate-action calendar and provider adjustment basis not certified"
+      ],
+      "large_gaps_gt7pct": []
+    }
+  ],
+  "provenance": [
+    {
+      "symbol": "SSI",
+      "url": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock?symbol=SSI&resolution=1D&from=1773507600&to=1792601999",
+      "retrieved_at": "2026-10-21T21:00:58.239011+07:00",
+      "http_status": 200,
+      "sha256": "232932a5eb89ae3962c8c3e2525d66d1a85e8dae5b85dd21d853beac7f32ce90",
+      "bar_count": 152,
+      "first_date": "2026-03-16",
+      "last_date": "2026-10-21",
+      "missing_sessions": [],
+      "price_unit": "1000 VND converted once to VND",
+      "volume_unit": "shares (repo contract)"
+    },
+    {
+      "symbol": "VCI",
+      "url": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock?symbol=VCI&resolution=1D&from=1773507600&to=1792601999",
+      "retrieved_at": "2026-10-21T21:00:58.370197+07:00",
+      "http_status": 200,
+      "sha256": "eaf13d3380c58f9d8e364bd0666abfe679f180a6d62b832b32a6c8846ea2229b",
+      "bar_count": 152,
+      "first_date": "2026-03-16",
+      "last_date": "2026-10-21",
+      "missing_sessions": [],
+      "price_unit": "1000 VND converted once to VND",
+      "volume_unit": "shares (repo contract)"
+    },
+    {
+      "symbol": "KDH",
+      "url": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock?symbol=KDH&resolution=1D&from=1773507600&to=1792601999",
+      "retrieved_at": "2026-10-21T21:00:58.482173+07:00",
+      "http_status": 200,
+      "sha256": "1d3e02299094a5aa68ce8f7e1164f891cf24b749215241ebe5eeecd868ab299a",
+      "bar_count": 152,
+      "first_date": "2026-03-16",
+      "last_date": "2026-10-21",
+      "missing_sessions": [],
+      "price_unit": "1000 VND converted once to VND",
+      "volume_unit": "shares (repo contract)"
+    },
+    {
+      "symbol": "NLG",
+      "url": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock?symbol=NLG&resolution=1D&from=1773507600&to=1792601999",
+      "retrieved_at": "2026-10-21T21:00:58.588197+07:00",
+      "http_status": 200,
+      "sha256": "03184ddbfbd05fd66e647dc4798a7087dbf2d0ce50e8b519f4d390997c9ff593",
+      "bar_count": 152,
+      "first_date": "2026-03-16",
+      "last_date": "2026-10-21",
+      "missing_sessions": [],
+      "price_unit": "1000 VND converted once to VND",
+      "volume_unit": "shares (repo contract)"
+    },
+    {
+      "symbol": "TPB",
+      "url": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock?symbol=TPB&resolution=1D&from=1773507600&to=1792601999",
+      "retrieved_at": "2026-10-21T21:00:58.688147+07:00",
+      "http_status": 200,
+      "sha256": "34119e35adbfb1671e42c912ca2bca2319b00388371647d13142ce5d33d589a2",
+      "bar_count": 152,
+      "first_date": "2026-03-16",
+      "last_date": "2026-10-21",
+      "missing_sessions": [],
+      "price_unit": "1000 VND converted once to VND",
+      "volume_unit": "shares (repo contract)"
+    },
+    {
+      "symbol": "VNINDEX",
+      "url": "https://services.entrade.com.vn/chart-api/v2/ohlcs/index?symbol=VNINDEX&resolution=1D&from=1773507600&to=1792601999",
+      "retrieved_at": "2026-10-21T21:00:58.802890+07:00",
+      "http_status": 200,
+      "sha256": "c14be799b3741b1708a3403567c9c2b1f0cdb95c2281df88547150a5d51e6edc",
+      "bar_count": 152,
+      "first_date": "2026-03-16",
+      "last_date": "2026-10-21",
+      "missing_sessions": [],
+      "price_unit": "index points",
+      "volume_unit": "provider index volume"
+    }
+  ],
+  "ds1_watch_proposals": [],
+  "buy_signals": []
+}

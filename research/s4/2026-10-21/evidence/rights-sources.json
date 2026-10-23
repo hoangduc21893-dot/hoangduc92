@@ -1,0 +1,15 @@
+[
+  {
+    "name": "ssi-ir",
+    "url": "https://www.ssi.com.vn/quan-he-nha-dau-tu",
+    "retrieved_at": "2026-10-21T21:01:43.188981+07:00",
+    "http_status": 200,
+    "sha256": "464a4372c93e3a94acfb349133fd7954969d97362874608e6df9ec99d5efecea"
+  },
+  {
+    "name": "tpb-rights",
+    "url": "https://vsdc.vn/vi/ad/200697",
+    "retrieved_at": "2026-10-21T21:01:44.730713+07:00",
+    "error": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>"
+  }
+]
