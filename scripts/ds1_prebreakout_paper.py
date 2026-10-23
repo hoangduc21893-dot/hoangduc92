@@ -5,13 +5,12 @@ from datetime import datetime, date
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from scripts.ds1_paper_dnse import Client, pre_breakout_rank
+from scripts.ds1_universe import ACTIVE
 
 TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 WEIGHTS = {"trend":15,"base":15,"pivot":10,"dryup":10,"contraction":10,
            "relative_strength":15,"accumulation":10,"liquidity":10,"market_sector":5}
-ACTIVE = ("PVT","PVS","MSB","HAH","BSR","VGC","DHC","VPB","MWG","HDB","PET",
-          "HPG","DCM","GMD","PLX","ANV","VHC","PHR","TCB")
-WATCH_RISK = ("GVR",)
+WATCH_RISK = ()
 
 def mean(values):
     return sum(values)/len(values) if values else 0.0

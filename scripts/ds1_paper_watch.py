@@ -4,12 +4,15 @@ from datetime import date,datetime,timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from scripts.ds1_prebreakout_paper import ACTIVE,WATCH_RISK,compare
+from scripts.ds1_universe import ARCHIVED
 from scripts.ds1_paper_dnse import Client
 TZ=ZoneInfo("Asia/Ho_Chi_Minh")
 def present(result):
     rows=[]
     for item in result["symbols"]:
         v=item["v2"];score=v.get("score");gates=v.get("gates",[])
+        if item["symbol"] in ARCHIVED:
+            continue
         watch=item["symbol"] not in WATCH_RISK and score is not None and score>=70 and not any(g in gates for g in ("TREND_GATE","PIVOT_GATE","LIQUIDITY_GATE"))
         rows.append({"symbol":item["symbol"],"v1_score":item["v1"].get("score") if item["v1"] else None,"v2_score":score,
           "candidate":watch,"paper_status":"PAPER_WATCH" if watch else "WATCH_RISK" if item["symbol"] in WATCH_RISK else "DATA_ERROR" if score is None else "MONITOR",
@@ -18,9 +21,10 @@ def present(result):
 def run(asof,client,output):
     result=compare(ACTIVE+WATCH_RISK,asof,client)
     rows=present(result)
-    if len(rows)!=20 or any(r["paper_status"]=="DATA_ERROR" for r in rows):
+    if len(rows)!=len(ACTIVE+WATCH_RISK) or {r["symbol"] for r in rows}!=set(ACTIVE+WATCH_RISK) or any(r["paper_status"]=="DATA_ERROR" for r in rows):
         raise ValueError("INCOMPLETE_OR_STALE_DATA: no paper snapshot published")
     payload={"asof":asof,"mode":"PAPER_WATCH_RESEARCH_ONLY","validated_buy_signals":False,"telegram_enabled":False,
+      "symbols_expected":list(ACTIVE+WATCH_RISK),"archived_symbols":list(ARCHIVED),
       "market_sector_status":"UNVERIFIED","candidate_count":sum(r["candidate"] for r in rows),"rows":rows}
     p=Path(output);p.parent.mkdir(parents=True,exist_ok=True)
     p.write_text(json.dumps(payload,ensure_ascii=False,indent=2),encoding="utf-8")

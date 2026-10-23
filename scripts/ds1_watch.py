@@ -6,8 +6,9 @@ from datetime import datetime, time as dtime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 import requests
+from scripts.ds1_universe import ACTIVE
 
-DS1 = ["PVT","PVS","MSB","HAH","BSR","VGC","DHC","VPB","MWG","HDB","PET","HPG","DCM","GMD"]
+DS1 = list(ACTIVE)
 NAV_VND=100_000_000
 RISK_PER_TRADE_VND=400_000
 MAX_POSITION_PCT=0.20
