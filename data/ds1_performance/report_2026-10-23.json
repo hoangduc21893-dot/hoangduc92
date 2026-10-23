@@ -1,0 +1,814 @@
+{
+  "status": "PRICE_VALIDATED",
+  "returns_status": "RETURNS_UNVERIFIED",
+  "reference_equal_weight_change_pct": 3.527231158294794,
+  "reference_up": 13,
+  "reference_down": 7,
+  "reference_flat": 0,
+  "reference_ranking": [
+    "PET",
+    "MSB",
+    "VGC",
+    "HAH",
+    "GMD",
+    "DCM",
+    "TCB",
+    "VPB",
+    "MWG",
+    "HDB",
+    "ANV",
+    "DHC",
+    "HPG",
+    "PHR",
+    "PVT",
+    "VHC",
+    "PVS",
+    "PLX",
+    "GVR",
+    "BSR"
+  ],
+  "provenance": {
+    "collector_commit": "6cd6c37c0927f44d7c77853198a52c4d4313b8ca",
+    "run_url": "https://github.com/hoangduc21893-dot/hoangduc92/actions/runs/39937785157",
+    "payload_hash": "SHA256 of json.dumps(payload, sort_keys=True, allow_nan=False), UTF-8",
+    "entry_prices": "Historical DNSE observations fetched at collection time, not original-entry snapshots"
+  },
+  "date": "2026-10-23",
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "verified_count": 0,
+  "expected_count": 20,
+  "prices_validated_count": 20,
+  "collected_at": "2026-10-23T17:15:24.890966+07:00",
+  "scope": "close-to-close price return; excludes fees, taxes and cash dividends; T+0 is entry session",
+  "equal_weight_return_pct": null,
+  "wins": null,
+  "losses": null,
+  "flats": null,
+  "top": [],
+  "bottom": [],
+  "rows": [
+    {
+      "symbol": "PVT",
+      "added_date": "2026-09-22",
+      "start_date": "2026-09-22",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 24100,
+      "end_close_vnd": 23700,
+      "t_plus": 23,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "ed0375ef67ae1e7aa93a0082250ae63246f0c75e12b6f76f4c97fcba6628a0e8",
+        "02e92816c82c08c1c2536c50bde421238b7cbc107da3303e9e095e4a84ea0fcc"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1790042400,
+        "close_vnd": 24100,
+        "volume": 11627600
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 23700,
+        "volume": 5382800
+      },
+      "reference_change_pct": -1.6597510373443984,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 15
+    },
+    {
+      "symbol": "MSB",
+      "added_date": "2026-09-22",
+      "start_date": "2026-09-22",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 13500,
+      "end_close_vnd": 15500,
+      "t_plus": 23,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "20a90763de9b2e38eae04b4e8e13432982279fffd13139838a4350da46728264",
+        "6d44f5be83fa016451d5373fc8516bfb914b42871ec4059a38e2bfda5bcfa868"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1790042400,
+        "close_vnd": 13500,
+        "volume": 19351700
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 15500,
+        "volume": 8022500
+      },
+      "reference_change_pct": 14.814814814814815,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 2
+    },
+    {
+      "symbol": "HAH",
+      "added_date": "2026-09-22",
+      "start_date": "2026-09-22",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 48300,
+      "end_close_vnd": 51300,
+      "t_plus": 23,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "3387d13c2ea2ce894fe978357cde2b6c38319c35e209d4143355522af540c00c",
+        "5a8d3efa8b4dd12fdbdbd3eda5d4235869bcc19aa1bd7856c82dcfd115f9a139"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1790042400,
+        "close_vnd": 48300,
+        "volume": 1147100
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 51300,
+        "volume": 524600
+      },
+      "reference_change_pct": 6.211180124223603,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 4
+    },
+    {
+      "symbol": "BSR",
+      "added_date": "2026-09-22",
+      "start_date": "2026-09-22",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 31350,
+      "end_close_vnd": 29050,
+      "t_plus": 23,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "5d7ebc25fa60f98dcc5688d93692ef0dddd621056157fe7a0b675ccdaebdc49a",
+        "742c0d010f33bdddebdaf67b6d0ca60737c61014e65c784d9b7e82eea99eed5f"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1790042400,
+        "close_vnd": 31350,
+        "volume": 10946100
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 29050,
+        "volume": 7071600
+      },
+      "reference_change_pct": -7.33652312599681,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 20
+    },
+    {
+      "symbol": "VGC",
+      "added_date": "2026-09-22",
+      "start_date": "2026-09-22",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 41000,
+      "end_close_vnd": 44500,
+      "t_plus": 23,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "492aa104fbc2473a320a444833a10b698c1f9d1a1dce2bc0bfd8ce6174995a2f",
+        "ed84fd62896657b66cc459bcc926a6be06bd1c7cde922470f195e1afb8b67de5"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1790042400,
+        "close_vnd": 41000,
+        "volume": 436500
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 44500,
+        "volume": 467600
+      },
+      "reference_change_pct": 8.536585365853659,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 3
+    },
+    {
+      "symbol": "PET",
+      "added_date": "2026-09-22",
+      "start_date": "2026-09-22",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 41500,
+      "end_close_vnd": 56700,
+      "t_plus": 23,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "d4fd3003ae617f4149a83c5abd47b97b31d14ce0dbf132a9a2df581bd5ce61cc",
+        "69073319be343149c7411518a46235a0da0bbf7c1a55b06a95e2670e453a4d31"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1790042400,
+        "close_vnd": 41500,
+        "volume": 1647800
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 56700,
+        "volume": 1470900
+      },
+      "reference_change_pct": 36.626506024096386,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 1
+    },
+    {
+      "symbol": "DHC",
+      "added_date": "2026-09-23",
+      "start_date": "2026-09-23",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 37810,
+      "end_close_vnd": 38600,
+      "t_plus": 22,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "38c4aa9cde57305401e00ed13dee6b7156ce84891bde1f94f0fc7a31416b5f63",
+        "355b52fc3f198bbad189c02c76d02a0a7e01e50acef28c55193bd66e79f1c762"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1790128800,
+        "close_vnd": 37810,
+        "volume": 774800
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 38600,
+        "volume": 431400
+      },
+      "reference_change_pct": 2.089394340121661,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 12
+    },
+    {
+      "symbol": "MWG",
+      "added_date": "2026-09-25",
+      "start_date": "2026-09-25",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 72430,
+      "end_close_vnd": 75500,
+      "t_plus": 20,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "c2f5663c2b9d5c4f29a8e9bb63921b2d77a40bb071afb0c58635f5d0eb1ac18b",
+        "c905786ae2e00735083e43fe7c1767b54066784ee04310f1743a5d952e7197db"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1790301600,
+        "close_vnd": 72430,
+        "volume": 1778600
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 75500,
+        "volume": 2127300
+      },
+      "reference_change_pct": 4.238575176032031,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 9
+    },
+    {
+      "symbol": "PVS",
+      "added_date": "2026-09-29",
+      "start_date": "2026-09-29",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 34100,
+      "end_close_vnd": 32300,
+      "t_plus": 18,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "63824735cb340902a5e626c496ab7184428bb098b513b7ccb3fe6edcf239fe5d",
+        "19e5fdcf75213b6e4bf3970a010bcafea11450a968303a1b6c7bf5148a109b21"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1790647200,
+        "close_vnd": 34100,
+        "volume": 7205400
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 32300,
+        "volume": 1843300
+      },
+      "reference_change_pct": -5.278592375366569,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 17
+    },
+    {
+      "symbol": "HDB",
+      "added_date": "2026-10-02",
+      "start_date": "2026-10-02",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 21880,
+      "end_close_vnd": 22550,
+      "t_plus": 15,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "Review corporate actions: no manual adjustment",
+      "payload_sha256": [
+        "6b670f35f034a016eaab0f7239305053d30e71920345fdbecc5a1d611020622f",
+        "f2954d7807bfc9bb5ba01a2f6c5c0ee9f0e8321bbab77042a527bb5bd49b0c04"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1790906400,
+        "close_vnd": 21880,
+        "volume": 15620900
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 22550,
+        "volume": 12103900
+      },
+      "reference_change_pct": 3.0621572212065815,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 10
+    },
+    {
+      "symbol": "VPB",
+      "added_date": "2026-10-05",
+      "start_date": "2026-10-05",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 23000,
+      "end_close_vnd": 24100,
+      "t_plus": 14,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "9b329b8179d508112f6ae0f73c79f9d9536e696adab92658125327b1c6580a8b",
+        "5103b8c6273dceb0fe0ce6361673bb9ed8f8ff180b88c23c701c02d1770adc2e"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1791165600,
+        "close_vnd": 23000,
+        "volume": 14159200
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 24100,
+        "volume": 11352800
+      },
+      "reference_change_pct": 4.782608695652174,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 8
+    },
+    {
+      "symbol": "PLX",
+      "added_date": "2026-10-08",
+      "start_date": "2026-10-08",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 37600,
+      "end_close_vnd": 35450,
+      "t_plus": 11,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "bff13221d80be4628dabc3ed748c66bbc349211bd8d4c48eba99ea4b9dc0b82c",
+        "413feea093fadabb0910baf688d4160a7688f9a2bba8820a3173aa1af18d3948"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1791424800,
+        "close_vnd": 37600,
+        "volume": 10082100
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 35450,
+        "volume": 2879000
+      },
+      "reference_change_pct": -5.718085106382978,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 18
+    },
+    {
+      "symbol": "ANV",
+      "added_date": "2026-10-08",
+      "start_date": "2026-10-08",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 18650,
+      "end_close_vnd": 19050,
+      "t_plus": 11,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "ebf1e0483b1497f09a9379209e17bcc4a4e1b1d770be1e6eb9e55e24cd323fc3",
+        "ba2878a135212ccbf52164703cd3de764a71bb768108cd724ef5ac2042f28563"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1791424800,
+        "close_vnd": 18650,
+        "volume": 2336600
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 19050,
+        "volume": 1446100
+      },
+      "reference_change_pct": 2.1447721179624666,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 11
+    },
+    {
+      "symbol": "VHC",
+      "added_date": "2026-10-08",
+      "start_date": "2026-10-08",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 53000,
+      "end_close_vnd": 52100,
+      "t_plus": 11,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "a3b941488a36b0a11b33d20cc7741deca6857aca8bfc17cfea403c2528497138",
+        "b7ef414af144bca0e1a2ae30efeb750200de6159d24498e74a46ea454cc70ed5"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1791424800,
+        "close_vnd": 53000,
+        "volume": 1101500
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 52100,
+        "volume": 262200
+      },
+      "reference_change_pct": -1.6981132075471699,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 16
+    },
+    {
+      "symbol": "GVR",
+      "added_date": "2026-10-08",
+      "start_date": "2026-10-08",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 33850,
+      "end_close_vnd": 31750,
+      "t_plus": 11,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "ae2ca9d2712574f8f3044d51a2a1be25c2c8f2b93e4e587ba22abc6592ab9215",
+        "5c35971499a9dd43314fa74cce6ff581595b78f9688433fef3d930882aef83cf"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1791424800,
+        "close_vnd": 33850,
+        "volume": 2944100
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 31750,
+        "volume": 1585300
+      },
+      "reference_change_pct": -6.203840472673559,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 19
+    },
+    {
+      "symbol": "PHR",
+      "added_date": "2026-10-10",
+      "start_date": "2026-10-12",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 32850,
+      "end_close_vnd": 32550,
+      "t_plus": 9,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "b4185fe7ac9f053d71c2b5b4af6431da540ff8d7b007cbf24c6c1c63e55bf436",
+        "994c665db9bb26b1f0c0a9dbb159452f9a2ea661971b78b36364c085e35fcf35"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1791770400,
+        "close_vnd": 32850,
+        "volume": 355800
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 32550,
+        "volume": 258400
+      },
+      "reference_change_pct": -0.91324200913242,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 14
+    },
+    {
+      "symbol": "DCM",
+      "added_date": "2026-10-10",
+      "start_date": "2026-10-12",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 33750,
+      "end_close_vnd": 35500,
+      "t_plus": 9,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "6d74f0c3aa28a68a7add392eb5c2f13a2ffdd96bf7eec4f09ef7422da0c99df5",
+        "d285e4a8b35126fe3dd0eaca450313b0d4840ca2cd8dbeea82aa3d553b3bbf2c"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1791770400,
+        "close_vnd": 33750,
+        "volume": 1305100
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 35500,
+        "volume": 2943700
+      },
+      "reference_change_pct": 5.185185185185185,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 6
+    },
+    {
+      "symbol": "GMD",
+      "added_date": "2026-10-10",
+      "start_date": "2026-10-12",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 54100,
+      "end_close_vnd": 57100,
+      "t_plus": 9,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "Review corporate actions: no manual adjustment",
+      "payload_sha256": [
+        "521cf793e48859d8e6680a8df59d7f6d03cb7c76668b1e396f8d01b486e9b987",
+        "98152fa6852f279cb5716df028bf49bfd74b88d16a78dad08df170ae6de2f9f9"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1791770400,
+        "close_vnd": 54100,
+        "volume": 1927700
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 57100,
+        "volume": 1895100
+      },
+      "reference_change_pct": 5.545286506469501,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 5
+    },
+    {
+      "symbol": "HPG",
+      "added_date": "2026-10-10",
+      "start_date": "2026-10-12",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 20700,
+      "end_close_vnd": 20950,
+      "t_plus": 9,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "ac5a8ce2cef61ba6a1b36b5f31be21cc83e69bb5c5ef5ef071a7566bc91b7750",
+        "ca6b172bf80dec65e14b12ad2d08c1b53cf9884f9b52fcdf0b94de807cd51014"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1791770400,
+        "close_vnd": 20700,
+        "volume": 31127600
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 20950,
+        "volume": 12949000
+      },
+      "reference_change_pct": 1.2077294685990339,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 13
+    },
+    {
+      "symbol": "TCB",
+      "added_date": "2026-10-10",
+      "start_date": "2026-10-12",
+      "end_date": "2026-10-23",
+      "start_close_vnd": 32600,
+      "end_close_vnd": 34200,
+      "t_plus": 9,
+      "return_pct": null,
+      "outcome": null,
+      "verified": false,
+      "warning": "",
+      "payload_sha256": [
+        "3ebe50bc262cbb5af96bc3b196b69e564062fc68e3591a255caa7b215d1308d1",
+        "63a86a8680e159387f8bf2363f7a72be6053bc84d5cff9fca4f37d1bbf7c05c3"
+      ],
+      "prices_validated": true,
+      "start_bar": {
+        "timestamp": 1791770400,
+        "close_vnd": 32600,
+        "volume": 21292500
+      },
+      "end_bar": {
+        "timestamp": 1792720800,
+        "close_vnd": 34200,
+        "volume": 16305300
+      },
+      "reference_change_pct": 4.9079754601226995,
+      "price_status": "PRICE_VALIDATED",
+      "returns_status": "RETURNS_UNVERIFIED",
+      "corporate_action_audit": {
+        "status": "UNVERIFIED",
+        "manual_adjustment_applied": false,
+        "note": "All corporate actions and DNSE adjustment basis require independent review; no additional adjustment."
+      },
+      "error": "adjustment basis unverified: return withheld",
+      "reference_rank": 7
+    }
+  ]
+}

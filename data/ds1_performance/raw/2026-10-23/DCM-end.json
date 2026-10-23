@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-10-23",
+  "symbol": "DCM",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-10-23T17:15:33.242509+07:00",
+  "payload_sha256": "d285e4a8b35126fe3dd0eaca450313b0d4840ca2cd8dbeea82aa3d553b3bbf2c",
+  "payload": {
+    "t": [
+      1792720800
+    ],
+    "o": [
+      35.25
+    ],
+    "h": [
+      35.9
+    ],
+    "l": [
+      34.75
+    ],
+    "c": [
+      35.5
+    ],
+    "v": [
+      2943700
+    ],
+    "nextTime": 0
+  }
+}
