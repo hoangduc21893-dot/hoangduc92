@@ -3,6 +3,8 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - 'scripts/ds1_universe.py'
+      - 'test_ds1_universe.py'
       - 'scripts/ds1_paper_watch.py'
       - 'test_ds1_paper_watch.py'
       - 'scripts/ds1_prebreakout_paper.py'
@@ -25,7 +27,7 @@ jobs:
           python-version: '3.11'
       - run: python -m pip install requests tzdata
       - name: Test paper watch
-        run: python -m unittest -v test_ds1_paper_watch
+        run: python -m unittest -v test_ds1_paper_watch test_ds1_universe
       - name: Historical closed-day DNSE smoke test (PR only; no alerts)
         if: github.event_name == 'pull_request'
         env:
