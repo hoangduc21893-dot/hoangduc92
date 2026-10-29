@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-10-29",
+  "symbol": "MWG",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-10-29T17:28:50.647987+07:00",
+  "payload_sha256": "364fefa716af7c29b9050338c0d29391167000401bc2b542c66640f7ca5136c1",
+  "payload": {
+    "t": [
+      1793239200
+    ],
+    "o": [
+      76
+    ],
+    "h": [
+      76.2
+    ],
+    "l": [
+      75
+    ],
+    "c": [
+      75.8
+    ],
+    "v": [
+      1965100
+    ],
+    "nextTime": 0
+  }
+}
