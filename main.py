@@ -343,46 +343,9 @@ Trả lời ngắn gọn, rõ ràng và ưu tiên tính thực tế.
 # ============================================================
 
 def send_telegram(message):
-
-    if not TELEGRAM_BOT_TOKEN:
-        raise RuntimeError(
-            "Thiếu TELEGRAM_BOT_TOKEN."
-        )
-
-    if not TELEGRAM_CHAT_ID:
-        raise RuntimeError(
-            "Thiếu TELEGRAM_CHAT_ID."
-        )
-
-    url = (
-        f"https://api.telegram.org/"
-        f"bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    )
-
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message
-    }
-
-    try:
-
-        response = requests.post(
-            url,
-            json=payload,
-            timeout=10
-        )
-
-        response.raise_for_status()
-
-        print(
-            "Đã gửi tin nhắn Telegram thành công!"
-        )
-
-    except Exception as e:
-
-        print(
-            f"Lỗi gửi Telegram: {e}"
-        )
+    """Telegram delivery disabled at user request; keep local analysis running."""
+    print("Telegram disabled; notification not sent.")
+    return False
 
 
 # ============================================================
@@ -420,3 +383,4 @@ if __name__ == "__main__":
     print(final_message)
 
     send_telegram(final_message)
+

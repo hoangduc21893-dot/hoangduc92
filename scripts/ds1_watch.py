@@ -226,9 +226,9 @@ def risk_engine(price,level,daily,strategy):
     return {"entry":entry,"sl":sl,"tp1":tp1,"tp2":tp2,"rr":2.0,"risk_per_share":risk_per_share,"atr14":a,"shares":shares,"position_value":entry*shares,"risk_vnd":risk_per_share*shares}
 
 def telegram(message):
-    token=os.environ["TELEGRAM_BOT_TOKEN"]; chat_id=os.environ["TELEGRAM_CHAT_ID"]
-    r=requests.post(f"https://api.telegram.org/bot{token}/sendMessage",json={"chat_id":chat_id,"text":message},timeout=15)
-    r.raise_for_status()
+    """Telegram delivery disabled at user request; keep local analysis running."""
+    print("Telegram disabled; notification not sent.")
+    return False
 
 def write_snapshot(snapshot):
     """Atomic, timestamped OHLCV snapshot; not a live tick feed."""
@@ -326,7 +326,7 @@ def main():
                 if risk is None: blocked.append("risk_engine_failed")
                 elif risk["rr"]<MIN_RR: blocked.append(f"rr={risk['rr']:.2f}<2.0")
                 item.update({"strategy":signal["strategy"],"score":score,"score_parts":parts,"trigger":signal["trigger"],"risk":risk,"block_reasons":blocked})
-                record={"timestamp":now.isoformat(),"symbol":symbol,"strategy":signal["strategy"],"market_regime":regime,"score":score,"score_parts":parts,"price":signal["price"],"trigger":signal["trigger"],"volume_ratio":vr,"relative_strength_20d_vs_vn30":rs,"risk":risk,"status":"BLOCKED" if blocked else "ALERTED","block_reasons":blocked}
+                record={"timestamp":now.isoformat(),"symbol":symbol,"strategy":signal["strategy"],"market_regime":regime,"score":score,"score_parts":parts,"price":signal["price"],"trigger":signal["trigger"],"volume_ratio":vr,"relative_strength_20d_vs_vn30":rs,"risk":risk,"status":"BLOCKED" if blocked else "NOTIFICATION_DISABLED","block_reasons":blocked}
                 append_history(record)
                 if blocked:
                     item["status"]="BLOCKED"
@@ -339,7 +339,9 @@ def main():
                     continue
                 r=risk
                 message=(f"🚨 DS1 CONFIRMED — {symbol}\n\nStrategy: {signal['strategy']}\nMarket Regime: {regime}\nScore: {score}/100\nEntry: {r['entry']:.2f}\nSL: {r['sl']:.2f}\nTP1: {r['tp1']:.2f}\nTP2: {r['tp2']:.2f}\nR:R: 1:{r['rr']:.2f}\nSize: {r['shares']:,} cp | Position: {r['position_value']:,.0f} VND\nRisk: {r['risk_vnd']:,.0f} VND\nVolume: {vr:.2f}x | RS20D: {rs*100:.1f}pp vs VN30\nTrigger: {signal['trigger']}\n\nAction: BUY only after final manual check.\nSafety: FALSE POSITIVE = NGHIÊM CẤM.")
-                telegram(message)
+                if not telegram(message):
+                    item["status"]="NOTIFICATION_DISABLED"
+                    continue
                 state.setdefault("alert_keys",{})[key]=now.isoformat()
                 save_state(state)
                 alerts+=1
@@ -358,3 +360,4 @@ def main():
 
 
 if __name__=="__main__": raise SystemExit(main())
+

@@ -54,17 +54,9 @@ def fetch_1m():
 
 
 def send_telegram(message):
-    token = os.environ.get("TELEGRAM_BOT_TOKEN")
-    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
-    if not token or not chat_id:
-        raise RuntimeError("Thiếu TELEGRAM_BOT_TOKEN hoặc TELEGRAM_CHAT_ID.")
-
-    r = requests.post(
-        TELEGRAM_URL.format(token),
-        json={"chat_id": chat_id, "text": message},
-        timeout=10,
-    )
-    r.raise_for_status()
+    """Telegram delivery disabled at user request; keep local analysis running."""
+    print("Telegram disabled; notification not sent.")
+    return False
 
 
 def main():
@@ -121,8 +113,8 @@ def main():
         "Kiểm tra retest/R:R trước khi vào."
     )
     send_telegram(message)
-    print("Telegram breakout alert sent.")
 
 
 if __name__ == "__main__":
     main()
+

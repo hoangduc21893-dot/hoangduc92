@@ -45,8 +45,9 @@ jobs:
       - name: Run DS1 conservative watcher
         if: ${{ github.event_name != 'pull_request' }}
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Telegram disabled at user request; scanning/reporting stays enabled.
+          TELEGRAM_BOT_TOKEN: ''
+          TELEGRAM_CHAT_ID: ''
         run: python scripts/ds1_watch.py
 
       - name: Save DS1 signal history and latest snapshot
@@ -59,3 +60,4 @@ jobs:
             data/ds1_latest_snapshot.json
           if-no-files-found: ignore
           retention-days: 90
+

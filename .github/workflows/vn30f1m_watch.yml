@@ -56,8 +56,9 @@ jobs:
       - name: Run VN30F1M Futures Engine
         if: ${{ github.event_name != 'push' }}
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Telegram disabled at user request; scanning/reporting stays enabled.
+          TELEGRAM_BOT_TOKEN: ''
+          TELEGRAM_CHAT_ID: ''
         run: python scripts/vn30f1m_watch.py
       - name: Save futures signal history
         if: always()
@@ -71,3 +72,4 @@ jobs:
             data/vn30f1m_paper_trades.jsonl
           if-no-files-found: ignore
           retention-days: 90
+

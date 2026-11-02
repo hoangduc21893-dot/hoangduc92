@@ -200,25 +200,10 @@ def main() -> int:
         "Rule: 3 nến 1M đã đóng trên breakout + trade-through + retest/hold + volume xác nhận."
     )
 
-    token = os.environ["TELEGRAM_BOT_TOKEN"]
-    chat_id = os.environ["TELEGRAM_CHAT_ID"]
-    response = requests.post(
-        f"https://api.telegram.org/bot{token}/sendMessage",
-        json={"chat_id": chat_id, "text": message},
-        timeout=15,
-    )
-    response.raise_for_status()
-
-    state.update({
-        "last_alert_date": today_key,
-        "last_alert_price": price,
-        "last_alert_volume_ratio": volume_ratio,
-        "alerted_at": now.isoformat(),
-    })
-    save_state(state)
-    print("MWG breakout Telegram alert sent.")
+    print("Telegram disabled; breakout recorded in logs only.")
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

@@ -381,7 +381,9 @@ def _paper_stats():
             "avg_r":sum(float(x.get("r",0)) for x in closed)/len(closed) if closed else 0.0}
 
 def telegram(msg):
-    r=requests.post(f"https://api.telegram.org/bot{os.environ['TELEGRAM_BOT_TOKEN']}/sendMessage",json={"chat_id":os.environ["TELEGRAM_CHAT_ID"],"text":msg},timeout=15);r.raise_for_status()
+    """Telegram delivery disabled at user request; keep local analysis running."""
+    print("Telegram disabled; notification not sent.")
+    return False
 
 def _execution_summary(now, fut, v30, fut_endpoint, v30_endpoint, reg, vw, vr, bs, oi, oi_status, candidates, evaluations, diagnostics, final_status, final_reason):
     print("")
@@ -472,7 +474,7 @@ def main():
         evaluations.append({"strategy":sig["strategy"],"side":sig["side"],"score":sc,"vn_ok":vn_ok,"risk":risk,"blocked":blocked})
         rec={"timestamp":now.isoformat(),"symbol":SYMBOL,"strategy":sig["strategy"],"side":sig["side"],"market_regime":reg,"score":sc,"score_parts":parts,
              "entry":sig["entry"],"trigger":sig["trigger"],"volume_ratio":vr,"futures_endpoint":fut_endpoint,"vn30_endpoint":v30_endpoint,"basis":bs,"oi":oi,"oi_status":oi_status,"oi_source":oi_source,"kbs_oi_snapshot":kbs_oi,"vn30_confirmation":vn_ok,"risk":risk,
-             "status":"BLOCKED" if blocked else "ALERTED","block_reasons":blocked}
+             "status":"BLOCKED" if blocked else "NOTIFICATION_DISABLED","block_reasons":blocked}
         history(rec)
         if blocked:continue
         state=load_state();key=f"{now:%Y-%m-%d}|{sig['strategy']}|{sig['side']}"
@@ -487,10 +489,11 @@ def main():
         telegram(msg);state.setdefault("alert_keys",{})[key]=now.isoformat();save_state(state)
         _paper_open(sig,r,now,sc,reg,oi)
         ps=_paper_stats(); print(f"Paper validation: open={ps['open']} closed={ps['closed']} win_rate={ps['win_rate_pct']:.1f}% avg_R={ps['avg_r']:.2f}")
-        _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,diagnostics,"ALERTED",sig["trigger"])
+        _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,diagnostics,"NOTIFICATION_DISABLED",sig["trigger"])
         return 0
     ps=_paper_stats(); print(f"Paper validation: open={ps['open']} closed={ps['closed']} win_rate={ps['win_rate_pct']:.1f}% avg_R={ps['avg_r']:.2f}")
     _execution_summary(now,fut,v30,fut_endpoint,v30_endpoint,reg,vw,vr,bs,oi,oi_status,candidates,evaluations,diagnostics,"WAIT","all confirmed candidates blocked")
     return 0
 
 if __name__=="__main__":raise SystemExit(main())
+

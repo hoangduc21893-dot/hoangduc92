@@ -54,12 +54,13 @@ jobs:
         working-directory: engine
         run: python -m unittest discover -v
 
-      - name: Run DS1 scan and send READY-only setup alerts
+      - name: Run DS1 scan (Telegram disabled)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: gemini-3.8-flash
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Telegram disabled at user request; scanning/reporting stays enabled.
+          TELEGRAM_BOT_TOKEN: ''
+          TELEGRAM_CHAT_ID: ''
         run: python engine/main.py
 
       - name: Save signal history artifact
@@ -70,4 +71,5 @@ jobs:
           path: data/signal_history.jsonl
           if-no-files-found: ignore
           retention-days: 90
+
 
