@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-02",
+  "symbol": "PVT",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-02T17:39:11.320299+07:00",
+  "payload_sha256": "aa22c387b54821c2ec5d75e88fa68974ba01c522d5f1cb5c078c6a4c19a1c4cc",
+  "payload": {
+    "t": [
+      1793584800
+    ],
+    "o": [
+      21.3
+    ],
+    "h": [
+      21.5
+    ],
+    "l": [
+      20.05
+    ],
+    "c": [
+      20.6
+    ],
+    "v": [
+      7466500
+    ],
+    "nextTime": 0
+  }
+}
