@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-03",
+  "symbol": "HDB",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-03T17:38:45.942719+07:00",
+  "payload_sha256": "3fde172a530f189d3b0e5304799bb4c1042928ada39465f2859440a2a4f60ba8",
+  "payload": {
+    "t": [
+      1793671200
+    ],
+    "o": [
+      21.85
+    ],
+    "h": [
+      21.95
+    ],
+    "l": [
+      21.4
+    ],
+    "c": [
+      21.8
+    ],
+    "v": [
+      13534600
+    ],
+    "nextTime": 0
+  }
+}
