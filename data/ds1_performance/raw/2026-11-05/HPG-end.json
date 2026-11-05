@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-05",
+  "symbol": "HPG",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-06T00:40:09.247153+07:00",
+  "payload_sha256": "e9f82cc1e7be3d35f2d39fe14bb6cd15eb9b30089071fa35c34f7a88ee49154e",
+  "payload": {
+    "t": [
+      1793844000
+    ],
+    "o": [
+      21.75
+    ],
+    "h": [
+      21.9
+    ],
+    "l": [
+      21.45
+    ],
+    "c": [
+      21.5
+    ],
+    "v": [
+      18613700
+    ],
+    "nextTime": 0
+  }
+}

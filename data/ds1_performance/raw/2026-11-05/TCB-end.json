@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-05",
+  "symbol": "TCB",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-06T00:40:09.667002+07:00",
+  "payload_sha256": "273ab3e1e00bca3a1180092341cbeb229c5c540249445d2a7940baaf27261041",
+  "payload": {
+    "t": [
+      1793844000
+    ],
+    "o": [
+      22.1
+    ],
+    "h": [
+      22.15
+    ],
+    "l": [
+      21.75
+    ],
+    "c": [
+      21.95
+    ],
+    "v": [
+      11973200
+    ],
+    "nextTime": 0
+  }
+}
