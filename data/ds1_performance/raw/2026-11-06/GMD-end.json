@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-06",
+  "symbol": "GMD",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-06T23:56:49.017028+07:00",
+  "payload_sha256": "ec0cb91b01144c08a7a68e6b369f5084928a96661309135fecb4400b4979d4a3",
+  "payload": {
+    "t": [
+      1793930400
+    ],
+    "o": [
+      51.7
+    ],
+    "h": [
+      52.8
+    ],
+    "l": [
+      51.6
+    ],
+    "c": [
+      52.8
+    ],
+    "v": [
+      1094700
+    ],
+    "nextTime": 0
+  }
+}
