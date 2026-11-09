@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-09",
+  "symbol": "PVS",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-10T03:09:35.727519+07:00",
+  "payload_sha256": "90eb345a90d6880492cdefa2eb4e68716a8b36edd23da39db2f5f0b34065b6b2",
+  "payload": {
+    "t": [
+      1794189600
+    ],
+    "o": [
+      29.5
+    ],
+    "h": [
+      29.9
+    ],
+    "l": [
+      28.9
+    ],
+    "c": [
+      29.1
+    ],
+    "v": [
+      1633100
+    ],
+    "nextTime": 0
+  }
+}

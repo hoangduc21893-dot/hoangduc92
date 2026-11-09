@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-09",
+  "symbol": "PET",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-10T03:09:34.372204+07:00",
+  "payload_sha256": "473c084479231bbf52b7632e1adead0c2504131f3ce5e81bd25c4781052fd004",
+  "payload": {
+    "t": [
+      1794189600
+    ],
+    "o": [
+      50.9
+    ],
+    "h": [
+      50.9
+    ],
+    "l": [
+      49.75
+    ],
+    "c": [
+      50.3
+    ],
+    "v": [
+      144900
+    ],
+    "nextTime": 0
+  }
+}

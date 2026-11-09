@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-09",
+  "symbol": "BSR",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-10T03:09:33.483383+07:00",
+  "payload_sha256": "1d8a8ce5846a5eb17e7467c90444dbbd7212d526e7e8b35b589177b661f5b189",
+  "payload": {
+    "t": [
+      1794189600
+    ],
+    "o": [
+      26.55
+    ],
+    "h": [
+      26.7
+    ],
+    "l": [
+      25.9
+    ],
+    "c": [
+      25.95
+    ],
+    "v": [
+      7218900
+    ],
+    "nextTime": 0
+  }
+}
