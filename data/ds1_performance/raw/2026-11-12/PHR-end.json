@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-12",
+  "symbol": "PHR",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-13T00:45:04.280853+07:00",
+  "payload_sha256": "261aa8bd553928e6e235f437a57afeeaf30474cf841a10272a181cc1f9b6b098",
+  "payload": {
+    "t": [
+      1794448800
+    ],
+    "o": [
+      29.75
+    ],
+    "h": [
+      29.75
+    ],
+    "l": [
+      29.35
+    ],
+    "c": [
+      29.35
+    ],
+    "v": [
+      195000
+    ],
+    "nextTime": 0
+  }
+}
