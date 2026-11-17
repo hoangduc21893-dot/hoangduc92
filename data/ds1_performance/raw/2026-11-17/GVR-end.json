@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-17",
+  "symbol": "GVR",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-18T01:46:49.321809+07:00",
+  "payload_sha256": "9199e30468ca0cb7e24681808e57d4d3ea981fdb8edd569e92e74a14572b4c8e",
+  "payload": {
+    "t": [
+      1794880800
+    ],
+    "o": [
+      28.8
+    ],
+    "h": [
+      29.05
+    ],
+    "l": [
+      27.8
+    ],
+    "c": [
+      28
+    ],
+    "v": [
+      1639300
+    ],
+    "nextTime": 0
+  }
+}
