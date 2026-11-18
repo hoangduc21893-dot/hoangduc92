@@ -1,0 +1,176 @@
+{
+  "effective_date": "2026-11-18",
+  "source_report": "data/ds1_performance/report_2026-11-17.json",
+  "source_report_status": "PRICE_VALIDATED",
+  "returns_status": "RETURNS_UNVERIFIED",
+  "rule": "reference_change_pct < -5 (strict); user-requested research-list removal, not an executed sale",
+  "previous_count": 20,
+  "current_count": 17,
+  "previous_members": [
+    {
+      "symbol": "PVT",
+      "added_date": "2026-09-22",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "MSB",
+      "added_date": "2026-09-22",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "HAH",
+      "added_date": "2026-09-22",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "BSR",
+      "added_date": "2026-09-22",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "VGC",
+      "added_date": "2026-09-22",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "PET",
+      "added_date": "2026-09-22",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "DHC",
+      "added_date": "2026-09-23",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "MWG",
+      "added_date": "2026-09-25",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "PVS",
+      "added_date": "2026-09-29",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "HDB",
+      "added_date": "2026-10-02",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "VPB",
+      "added_date": "2026-10-05",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "PLX",
+      "added_date": "2026-10-08",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "ANV",
+      "added_date": "2026-10-08",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "VHC",
+      "added_date": "2026-10-08",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "GVR",
+      "added_date": "2026-10-08",
+      "status": "WATCH_RISK"
+    },
+    {
+      "symbol": "PHR",
+      "added_date": "2026-10-10",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "DCM",
+      "added_date": "2026-10-10",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "GMD",
+      "added_date": "2026-10-10",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "HPG",
+      "added_date": "2026-10-10",
+      "status": "WATCH"
+    },
+    {
+      "symbol": "TCB",
+      "added_date": "2026-10-10",
+      "status": "WATCH"
+    }
+  ],
+  "removed": [
+    {
+      "symbol": "PVT",
+      "reference_change_pct": -17.842323651452283,
+      "added_date": "2026-09-22"
+    },
+    {
+      "symbol": "BSR",
+      "reference_change_pct": -22.647527910685806,
+      "added_date": "2026-09-22"
+    },
+    {
+      "symbol": "PVS",
+      "reference_change_pct": -18.475073313782993,
+      "added_date": "2026-09-29"
+    },
+    {
+      "symbol": "VPB",
+      "reference_change_pct": -6.086956521739131,
+      "added_date": "2026-10-05"
+    },
+    {
+      "symbol": "PLX",
+      "reference_change_pct": -15.957446808510639,
+      "added_date": "2026-10-08"
+    },
+    {
+      "symbol": "GVR",
+      "reference_change_pct": -16.142557651991613,
+      "added_date": "2026-10-08"
+    },
+    {
+      "symbol": "PHR",
+      "reference_change_pct": -14.003044140030442,
+      "added_date": "2026-10-10"
+    },
+    {
+      "symbol": "DCM",
+      "reference_change_pct": -11.407407407407407,
+      "added_date": "2026-10-10"
+    }
+  ],
+  "added": [
+    "BAF",
+    "VIX",
+    "NKG",
+    "DBC",
+    "NT2"
+  ],
+  "retained": [
+    "MSB",
+    "HAH",
+    "VGC",
+    "PET",
+    "DHC",
+    "MWG",
+    "HDB",
+    "ANV",
+    "VHC",
+    "GMD",
+    "HPG",
+    "TCB"
+  ],
+  "baseline_policy": "Retained symbols keep original added dates. New symbols use completed EOD 2026-11-18 (T+0), no intraday/backdated baseline. Historical bundles remain immutable.",
+  "selection_bias_warning": "New membership returns are not continuous performance of the original DS1; excluded losses remain in archived reports."
+}

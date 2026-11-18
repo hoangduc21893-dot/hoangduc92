@@ -14,13 +14,9 @@ from pathlib import Path
 import requests
 from scripts import ds2_eod as eod
 
-GROUPS = {
-    '2026-09-22': 'PVT MSB HAH BSR VGC PET', '2026-09-23': 'DHC',
-    '2026-09-25': 'MWG', '2026-09-29': 'PVS', '2026-10-02': 'HDB',
-    '2026-10-05': 'VPB', '2026-10-08': 'PLX ANV VHC GVR',
-    '2026-10-10': 'PHR DCM GMD HPG TCB',
-}
-CONFIG = {s: date.fromisoformat(d) for d, symbols in GROUPS.items() for s in symbols.split()}
+from scripts.ds1_universe import performance_config, watchlist_version
+
+CONFIG = performance_config()
 
 def sessions(start, end):
     result = []
@@ -100,8 +96,10 @@ def collect(day, now, session, output, evidence=None):
         return {'status': 'NON_TRADING_DAY', 'date': str(day), 'rows': []}
     if day > latest_completed(now):
         raise ValueError('requested session is not completed')
+    config = performance_config(day)
+    expected = len(config)
     rows = []
-    for symbol, added in CONFIG.items():
+    for symbol, added in config.items():
         start = effective(added)
         row = dict(symbol=symbol, added_date=str(added), start_date=str(start),
                    end_date=str(day), start_close_vnd=None, end_close_vnd=None,
@@ -137,15 +135,15 @@ def collect(day, now, session, output, evidence=None):
         except (ValueError, RuntimeError, OverflowError) as exc:
             row['error'] = str(exc)
         rows.append(row)
-    complete = len(rows) == 20 and all(r['verified'] for r in rows)
+    complete = len(rows) == expected and all(r['verified'] for r in rows)
     ranked = sorted(rows, key=lambda r: r['return_pct']) if complete else []
-    prices_complete = len(rows) == 20 and all(r.get('prices_validated') for r in rows)
+    prices_complete = len(rows) == expected and all(r.get('prices_validated') for r in rows)
     reference = sorted(rows, key=lambda r: (-r.get('reference_change_pct', 0), r['symbol'])) if prices_complete else []
     for rank, row in enumerate(reference, 1):
         row['reference_rank'] = rank
     return dict(status='VERIFIED' if complete else 'PRICE_VALIDATED' if prices_complete else 'BLOCKED',
         returns_status='VERIFIED' if complete else 'RETURNS_UNVERIFIED',
-        reference_equal_weight_change_pct=sum(r['reference_change_pct'] for r in rows)/20 if prices_complete else None,
+        reference_equal_weight_change_pct=sum(r['reference_change_pct'] for r in rows)/expected if prices_complete else None,
         reference_up=sum(r['reference_change_pct'] > 0 for r in rows) if prices_complete else None,
         reference_down=sum(r['reference_change_pct'] < 0 for r in rows) if prices_complete else None,
         reference_flat=sum(r['reference_change_pct'] == 0 for r in rows) if prices_complete else None,
@@ -154,10 +152,10 @@ def collect(day, now, session, output, evidence=None):
                     'payload_hash': 'SHA256 of json.dumps(payload, sort_keys=True, allow_nan=False), UTF-8',
                     'entry_prices': 'Historical DNSE observations fetched at collection time, not original-entry snapshots'}, date=str(day), source=eod.URL,
         resolution='1D', currency='VND', price_multiplier=1000,
-        verified_count=sum(r['verified'] for r in rows), expected_count=20,
+        verified_count=sum(r['verified'] for r in rows), expected_count=expected, watchlist_version=watchlist_version(day),
         prices_validated_count=sum(r.get('prices_validated', False) for r in rows),
         collected_at=now.isoformat(), scope='close-to-close price return; excludes fees, taxes and cash dividends; T+0 is entry session',
-        equal_weight_return_pct=sum(r['return_pct'] for r in rows)/20 if complete else None,
+        equal_weight_return_pct=sum(r['return_pct'] for r in rows)/expected if complete else None,
         wins=sum(r['outcome']=='WIN' for r in rows) if complete else None,
         losses=sum(r['outcome']=='LOSS' for r in rows) if complete else None,
         flats=sum(r['outcome']=='FLAT' for r in rows) if complete else None,
@@ -171,7 +169,7 @@ def write_report(output, report):
         writer.writeheader()
         writer.writerows(report.get('rows', []))
     lines = [f"# DS1 {report.get('date')} - {report['status']}",
-             f"Verified basis: {report.get('verified_count', 0)}/20. Prices: {report.get('prices_validated_count', 0)}/20.",
+             f"Verified basis: {report.get('verified_count', 0)}/{report.get('expected_count', 0)}. Prices: {report.get('prices_validated_count', 0)}/{report.get('expected_count', 0)}.",
              'HDB/GMD: corporate action review required; no manual adjustment is applied.',
              f"Returns: {report.get('returns_status')}. Reference equal-weight: {report.get('reference_equal_weight_change_pct')}%; up/down/flat: {report.get('reference_up')}/{report.get('reference_down')}/{report.get('reference_flat')}.",
              'Reference change is observed price movement, not verified investment or total return. Historical prices may already be adjusted.',
@@ -189,11 +187,11 @@ def publish(output, report, stage):
     target = output / (stem + '.json')
     if target.exists():
         old = json.loads(target.read_text(encoding='utf-8'))
-        if old.get('prices_validated_count') == 20 and old.get('status') in ('PRICE_VALIDATED', 'VERIFIED'):
+        if old.get('prices_validated_count') == old.get('expected_count', 20) and old.get('expected_count', 20) > 0 and old.get('status') in ('PRICE_VALIDATED', 'VERIFIED'):
             manifest_path = output / (stem + '.sha256.json')
             manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
             required = {stem + '.' + ext for ext in ('json', 'csv', 'md')}
-            if not required.issubset(manifest) or len(manifest) != 43:
+            if not required.issubset(manifest) or len(manifest) != 3 + 2 * old.get('expected_count', 20):
                 raise ValueError('incomplete existing provenance manifest')
             for name, expected_hash in manifest.items():
                 path = output / name
@@ -245,9 +243,10 @@ def main():
     if report['status'] not in ('VERIFIED', 'PRICE_VALIDATED', 'NON_TRADING_DAY'):
         write_report(args.output, report)
     if report['status'] == 'PRICE_VALIDATED':
-        print('::warning::20/20 prices validated; RETURNS_UNVERIFIED; no manual adjustment applied.')
+        print(f"::warning::{report['prices_validated_count']}/{report['expected_count']} prices validated; RETURNS_UNVERIFIED; no manual adjustment applied.")
     print(json.dumps(report, indent=2, allow_nan=False))
     raise SystemExit(0 if report['status'] in ('VERIFIED', 'PRICE_VALIDATED', 'NON_TRADING_DAY') else 1)
 
 if __name__ == '__main__':
     main()
+

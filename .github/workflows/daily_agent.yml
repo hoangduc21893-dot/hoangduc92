@@ -61,7 +61,7 @@ jobs:
           # Telegram disabled at user request; scanning/reporting stays enabled.
           TELEGRAM_BOT_TOKEN: ''
           TELEGRAM_CHAT_ID: ''
-        run: python engine/main.py
+        run: python -m scripts.run_ds1_engine
 
       - name: Save signal history artifact
         if: always()
@@ -71,5 +71,6 @@ jobs:
           path: data/signal_history.jsonl
           if-no-files-found: ignore
           retention-days: 90
+
 
 

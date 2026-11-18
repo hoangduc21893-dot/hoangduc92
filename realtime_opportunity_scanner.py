@@ -2,7 +2,8 @@ import json, os, time
 import pandas as pd
 import requests
 
-DS1 = ["PVT","PVS","MSB","TVS","PET","HAH","BSR","VPI","VGC","DHC","VTP","VPB","MWG"]
+from scripts.ds1_universe import symbols
+DS1 = list(symbols())
 URL = "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock"
 THRESHOLD = float(os.getenv("SCANNER_CANDIDATE_THRESHOLD","55"))
 COOLDOWN = int(os.getenv("SCANNER_COOLDOWN_SECONDS","900"))
@@ -124,3 +125,4 @@ def main():
     return 0
 
 if __name__=="__main__": raise SystemExit(main())
+

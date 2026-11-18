@@ -9,9 +9,9 @@ from scripts.ds1_paper_dnse import Client, pre_breakout_rank
 TZ = ZoneInfo("Asia/Ho_Chi_Minh")
 WEIGHTS = {"trend":15,"base":15,"pivot":10,"dryup":10,"contraction":10,
            "relative_strength":15,"accumulation":10,"liquidity":10,"market_sector":5}
-ACTIVE = ("PVT","PVS","MSB","HAH","BSR","VGC","DHC","VPB","MWG","HDB","PET",
-          "HPG","DCM","GMD","PLX","ANV","VHC","PHR","TCB")
-WATCH_RISK = ("GVR",)
+from scripts.ds1_universe import symbols, risk_symbols, watchlist_version
+WATCH_RISK = risk_symbols()
+ACTIVE = tuple(s for s in symbols() if s not in WATCH_RISK)
 
 def mean(values):
     return sum(values)/len(values) if values else 0.0
@@ -92,6 +92,7 @@ def compare(symbols, asof, client):
     except (ValueError,OverflowError) as exc:
         benchmark=[]
         benchmark_error=str(exc)
+    watch_risk=risk_symbols(end)
     results=[]
     for symbol in symbols:
         try:
@@ -100,21 +101,21 @@ def compare(symbols, asof, client):
             daily=validate_series(client.ohlcv(symbol,"1D",now),end,symbol)
             v1=pre_breakout_rank(daily)
             v2=score_v2(daily,benchmark)
-            if symbol in WATCH_RISK:
+            if symbol in watch_risk:
                 v2["status"]="WATCH_RISK"
                 v2.setdefault("gates",[]).append("WATCH_RISK")
             results.append({"symbol":symbol,"v1":v1,"v2":v2})
         except Exception as exc:
             results.append({"symbol":symbol,"v1":None,"v2":{"score":None,"status":"DATA_ERROR","reason":str(exc)}})
     return {"asof":asof,"mode":"RESEARCH_ONLY","framework":"Pre-Breakout V2.0 experimental, thresholds NOT backtested",
-            "market_sector_data":"UNAVAILABLE","symbols":results}
+            "market_sector_data":"UNAVAILABLE","watch_risk":list(watch_risk),"watchlist_version":watchlist_version(end),"symbols":results}
 
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument("--date",required=True)
     parser.add_argument("--output",default="data/ds1_v2/pre_breakout_v2_research.json")
     args=parser.parse_args()
-    result=compare(ACTIVE+WATCH_RISK,args.date,Client(interval=0.5))
+    result=compare(symbols(args.date),args.date,Client(interval=0.5))
     path=Path(args.output);path.parent.mkdir(parents=True,exist_ok=True)
     path.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding="utf-8")
     print(json.dumps({"asof":args.date,"mode":"RESEARCH_ONLY","count":len(result["symbols"]),
@@ -123,3 +124,4 @@ def main():
     return 0 if all(x["v2"]["status"]!="DATA_ERROR" for x in result["symbols"]) else 2
 
 if __name__=="__main__":raise SystemExit(main())
+

@@ -57,8 +57,9 @@ jobs:
               rc=subprocess.call(["python","realtime_opportunity_scanner.py"])
               if rc==0:
                   print("[ENGINE] Candidate detected -> exact S1-S5/Risk Engine gate")
-                  subprocess.call(["python","engine/main.py"])
+                  subprocess.call(["python","-m","scripts.run_ds1_engine"])
               sleep_for=max(5,60-int(time.time()-started))
               time.sleep(sleep_for)
           PY
+
 

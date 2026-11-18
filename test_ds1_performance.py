@@ -27,7 +27,8 @@ def payload(symbol, day, session):
 
 class PerformanceTests(unittest.TestCase):
     def test_config_calendar(self):
-        self.assertEqual(len(d.CONFIG), 20)
+        self.assertEqual(len(d.CONFIG), 17)
+        self.assertEqual(len(d.performance_config(DAY)), 20)
         self.assertEqual(str(d.effective(date(2026, 10, 10))), '2026-10-12')
         self.assertEqual(len(d.sessions(date(2026, 10, 12), DAY))-1, 4)
         with self.assertRaises(ValueError): d.effective(date(2027, 1, 1))
@@ -53,7 +54,7 @@ class PerformanceTests(unittest.TestCase):
     @patch.object(d, 'get_payload', side_effect=payload)
     def test_verified_and_tamper(self, fetch):
         evidence = {}
-        for symbol, added in d.CONFIG.items():
+        for symbol, added in d.performance_config(DAY).items():
             start = d.effective(added)
             evidence[symbol] = dict(source=d.eod.URL, resolution='1D', start=str(start), end=str(DAY),
                 payload_sha256=[d.digest(payload(symbol,start,None)),d.digest(payload(symbol,DAY,None))],
@@ -112,3 +113,4 @@ class SafetyTests(unittest.TestCase):
         self.assertEqual(session.get.call_count, 3)
 
 if __name__ == '__main__': unittest.main()
+
