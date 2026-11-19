@@ -1,0 +1,18 @@
+﻿symbol,added_date,start_date,end_date,start_close_vnd,end_close_vnd,t_plus,reference_rank,reference_change_pct,returns_status,return_pct,outcome,verified,warning,error
+MSB,2026-09-22,2026-09-22,2026-11-19,13500,16550,42,1,22.59259259259259,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+HAH,2026-09-22,2026-09-22,2026-11-19,48300,46300,42,12,-4.140786749482402,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+VGC,2026-09-22,2026-09-22,2026-11-19,41000,38100,42,16,-7.073170731707317,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+PET,2026-09-22,2026-09-22,2026-11-19,41500,48500,42,2,16.867469879518072,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+DHC,2026-09-23,2026-09-23,2026-11-19,37810,36000,41,13,-4.7870933615445646,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+MWG,2026-09-25,2026-09-25,2026-11-19,72430,72100,39,8,-0.45561231533894797,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+HDB,2026-10-02,2026-10-02,2026-11-19,21880,22150,34,4,1.2340036563071297,RETURNS_UNVERIFIED,,,False,Review corporate actions: no manual adjustment,adjustment basis unverified: return withheld
+ANV,2026-10-08,2026-10-08,2026-11-19,17640,16200,30,17,-8.16326530612245,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+VHC,2026-10-08,2026-10-08,2026-11-19,53000,51200,30,11,-3.3962264150943398,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+GMD,2026-10-10,2026-10-12,2026-11-19,54100,51200,28,15,-5.360443622920518,RETURNS_UNVERIFIED,,,False,Review corporate actions: no manual adjustment,adjustment basis unverified: return withheld
+HPG,2026-10-10,2026-10-12,2026-11-19,20700,20450,28,10,-1.2077294685990339,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+TCB,2026-10-10,2026-10-12,2026-11-19,21730,20600,28,14,-5.200184077312471,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+BAF,2026-11-18,2026-11-18,2026-11-19,31150,30950,1,9,-0.6420545746388443,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+VIX,2026-11-18,2026-11-18,2026-11-19,12650,12700,1,6,0.3952569169960474,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+NKG,2026-11-18,2026-11-18,2026-11-19,12050,12300,1,3,2.074688796680498,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+DBC,2026-11-18,2026-11-18,2026-11-19,16600,16750,1,5,0.9036144578313253,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld
+NT2,2026-11-18,2026-11-18,2026-11-19,23900,23850,1,7,-0.20920502092050208,RETURNS_UNVERIFIED,,,False,,adjustment basis unverified: return withheld

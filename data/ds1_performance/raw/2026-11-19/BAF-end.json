@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-19",
+  "symbol": "BAF",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-20T01:41:25.124718+07:00",
+  "payload_sha256": "98d28e3dad4ef416b71bf83561380bf98f404041326eca3c2915cbab64f4f8fd",
+  "payload": {
+    "t": [
+      1795053600
+    ],
+    "o": [
+      31
+    ],
+    "h": [
+      31
+    ],
+    "l": [
+      30.75
+    ],
+    "c": [
+      30.95
+    ],
+    "v": [
+      846700
+    ],
+    "nextTime": 0
+  }
+}

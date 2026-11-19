@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-19",
+  "symbol": "DHC",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-20T01:41:21.187675+07:00",
+  "payload_sha256": "b5369e7e170f03a96055ecd8f4b6fd3f28d73e92af8848fa9d0460a635f39d8c",
+  "payload": {
+    "t": [
+      1795053600
+    ],
+    "o": [
+      36.05
+    ],
+    "h": [
+      36.05
+    ],
+    "l": [
+      35.5
+    ],
+    "c": [
+      36
+    ],
+    "v": [
+      299500
+    ],
+    "nextTime": 0
+  }
+}

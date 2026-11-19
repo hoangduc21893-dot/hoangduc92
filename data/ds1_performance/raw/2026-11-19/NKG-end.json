@@ -1,0 +1,31 @@
+{
+  "source": "https://services.entrade.com.vn/chart-api/v2/ohlcs/stock",
+  "session": "2026-11-19",
+  "symbol": "NKG",
+  "resolution": "1D",
+  "currency": "VND",
+  "price_multiplier": 1000,
+  "fetched_at": "2026-11-20T01:41:26.121899+07:00",
+  "payload_sha256": "f419ef7ef2edeaee37f93b5eec594253e15c733771e3ecc5985525ce5ac9f053",
+  "payload": {
+    "t": [
+      1795053600
+    ],
+    "o": [
+      12.1
+    ],
+    "h": [
+      12.35
+    ],
+    "l": [
+      11.8
+    ],
+    "c": [
+      12.3
+    ],
+    "v": [
+      4378400
+    ],
+    "nextTime": 0
+  }
+}
